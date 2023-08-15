@@ -1,0 +1,6 @@
+site_title = "chancho's site"
+landing_page = "yo_chancho.md"
+404_page = "woof.md"
+header_page = "heady.md"
+footer_page = "footy.md"
+
