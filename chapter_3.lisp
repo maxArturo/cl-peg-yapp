@@ -1,10 +1,10 @@
 ;; a plist is a property list, with symbols and alternating data.
 
-(defvar *some-local-var*  (list :a 1 :b 2 :c 3))
+;; (defvar *some-local-var*  (list :a 1 :b 2 :c 3))
 
 ;; you can get the data from here, with `getf`. A poor man's hash table of sorts.
 
-(getf *some-local-var* :c)
+;; (getf *some-local-var* :c)
 
 ;; let's start making some data.
 
@@ -15,7 +15,7 @@
          :points points
          :date date))
 
-(make-post "some title" "some content" 18 "2023-08-15")
+(make-post "sample title" "sample content" 18 "2023-08-15")
 
 ;; let's make a db var that holds everything
 (defvar *db* nil)
@@ -24,10 +24,11 @@
 (defun add-post (post) (push post *db*))
 
 ;; now we can add posts to our db
-(add-post (make-post "some title" 
-                     "some content"
-                     18
-                     "2023-08-15")) 
+(add-post (make-post "some title" "some content" 18 "2023-08-15")) 
+(add-post (make-post "new title" "new content" 42 "2023-08-15")) 
+(add-post (make-post "second title" "second content" 18 "2023-08-15")) 
+(add-post (make-post "third title" "third content" 38 "2023-08-15")) 
+
 
 ;; let's make the output look nice
 
@@ -181,4 +182,6 @@
 ;; CL-USER> (macroexpand-1 '(where :title "yoo" :date "some date"))
 ;; (LAMBDA (POST)
 ;;   (AND (EQUAL "yoo" (GETF POST :TITLE)) (EQUAL "some date" (GETF POST :DATE))))
+
+
 
