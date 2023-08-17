@@ -11,17 +11,18 @@
   "loads the site config. Default config location is `site.toml`"
   "we're not even trying to parse correct TOML, just the bare need"
   (setf *site-config* (uiop:read-file-lines filename)))
-
-;; lets make this a plist
-(defun toml-to-plist file-list-input
-  "turns the raw string list from toml input to a plist"
-  (let (lines) (remove-if (string-equal "" line) file-list-input))
-  (mapcar 
-    (lambda (line) ()) )
-  )
 ;; sample usage
 ;; (load-config :filename "/Users/max/Developer/hard_lisp/site_generator/site.toml")
-  
-;; oh god now I need to split...
+
+;; lets make this a plist
+(defun toml-to-plist (file-list-input)
+    (for:for ((raw-lines in file-list-input)
+          (lines unless (equal "" raw-lines) = raw-lines)
+          (splits = (uiop:split-string lines :separator "="))
+          (key-values 
+            = (destructuring-bind (key-str val-str) splits 
+                (list (read-from-string (string-trim " " key-str)) (string-trim "\" " val-str))))
+          (ans reducing key-values :by (lambda (curr-val acc) (append curr-val acc))))))
+;; (toml-to-plist *site-config*)
 
 
