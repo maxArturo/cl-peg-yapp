@@ -10,6 +10,18 @@ procedural development that Lisp espouses.
 let's get some general things out the way. the way Jekyll expects thins
 is the following:
 
+## testing
+
+Load 5am into your repl:
+
+``` lisp
+> (ql:quickload "fiveam")
+> T
+CL-USER> (asdf:make "sitegen")
+> T
+CL-USER> (5am:run! 'sitegen:sitegen-tests)
+```
+
 ## features
 
 - static site generation
