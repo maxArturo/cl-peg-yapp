@@ -15,11 +15,11 @@ is the following:
 Load 5am into your repl:
 
 ``` lisp
-> (ql:quickload "fiveam")
+(ql:quickload "fiveam")
 > T
-CL-USER> (asdf:make "sitegen")
+(asdf:make "sitegen")
 > T
-CL-USER> (5am:run! 'sitegen:sitegen-tests)
+(5am:run! 'sitegen:sitegen-tests)
 ```
 
 ## features
@@ -70,18 +70,3 @@ is:
     [even more markdown]
 
 thats one thing jekyll did well.
-
-## TODO
-
-- use asdf:
-
-``` lisp
-(asdf:defsystem "hello-lisp"
-  :description "hello-lisp: a sample Lisp system."
-    :version "0.0.1"
-    :author "Joe User <joe@example.com>"
-    :licence "Public Domain"
-    :components ((:file "packages")
-        (:file "macros" :depends-on ("packages"))
-        (:file "hello"  :depends-on ("macros"))))
-```

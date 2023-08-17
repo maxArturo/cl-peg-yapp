@@ -6,28 +6,19 @@
 #+5am
 (5am:in-suite toml-suite)
 
-(defmacro string-assertion (assertion-name doc-string assertion)
-  "macro for general-purpose string assertions. 
-   Clauses must be a lambda that takes a `line' var and returns
-   T or NIL."
-  (declare (string doc-string))
-  `(defun ,assertion-name (line) ,doc-string 
-     (declare (string line))
-     (,assertion line)))
+(defun is-empty (str)
+  "returns T if string is empty, NIL otherwise"
+  (declare (string str))
+  (equal "" str))
+
+(defun is-comment (str)
+  "returns T if str is considered a comment, NIL otherwise"
+  (equal #\# (uiop:first-char (string-left-trim " " str))))
 
 #+5am
-(5am:test some-test
- (5am:is 't))
-
-
-(string-assertion is-empty 
-  "returns T if string is empty, NIL otherwise"
-  (lambda (x) (equal "" x)))
-
-(string-assertion is-comment
-  "returns T if it is considered a comment, NIL otherwise"
-  (lambda (x) 
-    (equal #\# (uiop:first-char (string-left-trim " " x)))))
+(5am:test is-comment-test
+    (5am:is (eq NIL (is-comment "funky")))
+    (5am:is (eq NIL (is-comment " # now this is funky"))))
 
 (defun trim (str)
   "simple empty space trim"

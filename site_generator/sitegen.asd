@@ -6,7 +6,7 @@
   :license "MIT"
   :description "simple site generator"
   :encoding :utf-8
-  :depends-on (trivia for fiveam)
+  :depends-on (trivia for)
   :components
   ((:module src
     :pathname "src"
