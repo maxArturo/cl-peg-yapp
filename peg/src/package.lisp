@@ -1,8 +1,13 @@
-(defpackage :cl-peg
+(in-package :cl)
+
+(defpackage #:peg
   (:use #:cl #:trivia)
-  (:export
-   #:peg-tests))
+  (:export #:peg-suite #:peg-grammar-suite))
 
-(defpackage :peg-grammar
-  (:use #:cl #:trivia #:cl-peg))
+(defpackage #:peg-grammar
+  (:use #:cl #:peg)
+  (:export #:weird-sum))
 
+(defpackage #:peg-tests
+  (:use #:cl #:trivia #:peg))
+ 
