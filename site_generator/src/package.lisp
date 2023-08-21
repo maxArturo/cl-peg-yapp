@@ -3,5 +3,5 @@
   (:export
     ; just for fun
    #:get-valid-keyval
-   #:sitegen-tests
-   ))
+   #:sitegen-tests))
+

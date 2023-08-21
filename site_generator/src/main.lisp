@@ -15,4 +15,4 @@
 ;; sample usage
 ;; (load-config :filename "/Users/max/Developer/hard_lisp/site_generator/site.toml")
 
-;; (toml-to-plist *site-config*)
+ (toml-to-plist *site-config*)

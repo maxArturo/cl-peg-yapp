@@ -69,12 +69,9 @@
           (T (5am:is (equal (get-valid-keyval input) expected))))))
 
 (defun toml-to-plist (file-list-input)
-    (for:for ((raw-lines in file-list-input)
-          (lines unless (is-empty raw-lines) = raw-lines)
-          (splits unless (is-comment lines) = (get-valid-keyval lines))
-          (key-values 
-            unless (eq NIL splits)
-            = (destructuring-bind (key-str val-str) splits 
-                (list (read-from-string (string-trim " " key-str)) (string-trim "\" " val-str))))
-          (ans reducing key-values :by (lambda (curr-val acc) (append curr-val acc))))))
+  (for:for 
+    ((raw-lines in file-list-input)
+     (lines unless (is-empty raw-lines) = raw-lines)
+     (splits unless (is-comment lines) = (get-valid-keyval lines))
+     (ans reducing splits :by (lambda (curr-val acc) (append curr-val acc))))))
 

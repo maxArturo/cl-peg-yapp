@@ -6,7 +6,7 @@
   :license "MIT"
   :description "simple site generator"
   :encoding :utf-8
-  :depends-on (trivia for)
+  :depends-on (trivia for cl-ppcre)
   :components
   ((:module src
     :pathname "src"
