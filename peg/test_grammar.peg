@@ -1,0 +1,18 @@
+# start with the smallest subset possible
+# for now characters are self defining
+# some words and spaces, that's it
+# example taken from https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
+
+Expr     <- Factor AddExpr*
+AddExpr  <- ('+'/'-') Factor
+Factor   <- Primary MulExpr*
+MulExpr  <- ('*'/'/') Primary
+Primary  <- '(' Expr ')'
+          / Number
+          / Variable
+          / '-' Primary
+
+Number   <- [0-9]+
+Variable <- identifier
+
+

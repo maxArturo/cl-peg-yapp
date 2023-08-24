@@ -1,13 +1,18 @@
-(in-package :cl)
+(in-package #:cl)
+
+;; needed to enable interpol syntax
+(interpol:enable-interpol-syntax)
 
 (defpackage #:peg
   (:use #:cl #:trivia)
-  (:export #:peg-suite #:peg-grammar-suite))
+  (:export #:peg-suite 
+           #:grammar-suite
+           #:parser-suite))
 
 (defpackage #:peg-grammar
   (:use #:cl #:peg)
   (:export #:weird-sum))
 
-(defpackage #:peg-tests
-  (:use #:cl #:trivia #:peg))
- 
+(defpackage #:peg-parser
+  (:use #:cl #:peg))
+
