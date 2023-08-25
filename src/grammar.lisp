@@ -43,57 +43,101 @@
 
 (char-kind upper (<= 65 (char-code in) 90))
 
-(defun is-comment (grammar-line)
-  (and 
-    (not (uiop:emptyp grammar-line))
-    (char= #\# 
-         (uiop:first-char 
-           (string-left-trim " " grammar-line)))))
+;;; productions
+;; what is a line
+;; Line <- (!EndLine Char)* EndLine 
+;; our objective is to compose the above dynamically at will
+
+;; creating predicates
+;; predicates look ahead, but do not consume input. 
+;; if the shape is '(expression remaining-input) and you want to 
+;; apply a predicate, then you
+;; - eval the expression on your input
+;; - if not NIL, proceed but do not forward the remaining input. use the 
+;;   original input instead
+;; - else return nil 
+;; lookahead predicates do not return structs (as they do not consume
+; input), they simply return either the same input *or* NIL.
+
+(defun star-operator (expr input)
+  (star-operator-helper expr (list) input))
+
+(defun star-operator-helper (expr predicate-list input)
+  (trivia:match (funcall expr input) 
+      ((list pred-match-list rem-input)
+       (star-operator-helper 
+         expr (append predicate-list pred-match-list) rem-input))
+      (nil
+        (list predicate-list input))))
+
+
+(defun negative-predicate (expr input)
+  "applies a negative lookahead expression on the input.
+   returns NIL if expr succeeds, else returns `input` unchanged."
+  (declare (list input))
+  (cond ((funcall expr input) input) 
+        ('T NIL)))
+
 #+5am
-(5am:test is-comment-test
+(5am:test negative-predicate-test
   (for:for 
     (((&key expected input) in 
-        '((:expected T :input "# ")
-          (:expected NIL :input " hello ")
-          (:expected T :input " # hell "))))
-    (5am:is (equal expected (is-comment input)))))
- 
-; ;; productions
-(defun find-line-end (input) 
-  (or (find #\cr input :test #'equal)
-      (find #\lf input :test #'equal)
-      (search (coerce '(#\cr #\lf) 'string) input)))
-
-; what is a line
-; Line <- (!EndLine Char)? EndLine 
+        (list
+          (list 
+            :expected '(T a b)
+            :input (list (lambda (x) x) '(T a b)))
+          (list 
+            :expected NIL
+            :input (list (lambda (x) NIL) '(NIL))))))
+    (trivia:match input
+      ((list expr arg)
+       (5am:is (eql expected (negative-predicate expr arg)))))))
 
 (defun char-production (input) 
+  "verifies a single char in the next input.
+   returns both a struct and the remaining input to be consumed"
   (declare (list input))
   (let 
     ((val (car input))) 
     (and (characterp val)
-         (cons (make-expression :kind :char :value (list val)) (cdr input)))))
-; (char-production (coerce "" 'list))
+         (list 
+           (list (make-expression :kind :char :value (list val)))
+           (cdr input)))))
+
+#+5am
+(5am:test char-production-test
+  (for:for 
+    (((&key expected input) in 
+        (list
+          (list 
+            :expected (make-expression :kind :char :value '(#\a))  
+            :input '(#\a #\y #\o))
+          (list 
+            :expected NIL
+            :input '()))))
+    (trivia:match expected
+      ((expression kind value)
+       (let ((res (char-production input)))
+                (5am:is (equal (expression-kind (car res)) kind))
+                (5am:is (equal (expression-value (car res)) value))))
+      ((T) 
+       (5am:is (null (char-production input)))))))
 
 (defun endline-production (input)
   "returns both a struct and the remaining input to be consumed"
+  (declare (list input))
   (trivia:match input 
     ((trivia:guard (list* curr next _)
             (and (eql curr #\CR) (eql next #\LF)))
-     (print "first") 
      (list (make-expression 
                    :kind :endline 
                    :value (list curr next)) (cddr input)))
     ((trivia:guard (list* curr _)
             (or (eql curr #\CR) (eql curr #\LF)))
 
-     (print "second") 
      (list (make-expression 
                    :kind :endline 
                    :value (list curr)) (cdr input)))))
- 
-(endline-production '(#\LF #\a #\y #\o)) 
-
 
 #+5am
 (5am:test endline-production-test
@@ -104,6 +148,9 @@
             :expected (make-expression :kind :endline :value '(#\CR))  
             :input '( #\CR #\a #\y #\o))
           (list 
+            :expected NIL
+            :input (coerce "something else" 'list))
+          (list 
             :expected (make-expression :kind :endline :value '(#\CR #\LF))  
             :input '(#\CR #\LF #\a #\y #\o))
           (list 
@@ -111,40 +158,10 @@
             :input '( #\LF #\a #\y #\o)))))
     (trivia:match expected
       ((expression kind value)
-         (print "expecting struct")
-         (print input)
        (let ((res (endline-production input)))
-         (print "res")
-         (print res)
                 (5am:is (equal (expression-kind (car res)) kind))
                 (5am:is (equal (expression-value (car res)) value))))
       ((T) 
-         (print "expecting nothing")
-         (print expected)
-
-         (print "input")
-         (print input)
-         ;(print (endline-production input))
        (5am:is (null (endline-production input)))))))
 
-
-; what is a comment?
-; in PEG terms: 
-; Comment <- SP* '#' (word)
-(defun comment-production (input) 
-  "attempts to match a comment production rule for
-   the PEG definition grammar. Reads a comment starting
-   with a `#` (trimmed) till the next end of line char(s)."
-  (if (is-comment input) 
-      (let ((pos (find-line-end input))) 
-           (make-expression :kind :comment :value (subseq input 0 pos)))
-      NIL))
-#+5am
-(5am:test comment-production-test
-  (for:for 
-    (((&key expected input) in 
-        '((:expected T :input "# ")
-          (:expected NIL :input " hello ")
-          (:expected T :input " # hell "))))
-    (5am:is (equal expected (is-comment input)))))
 
