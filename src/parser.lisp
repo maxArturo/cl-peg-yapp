@@ -14,7 +14,7 @@
   (setf *input-buffer* (uiop:read-file-string filename)))
 
 ;; sample usage
-(load-config :filename "/Users/max/Developer/hard_lisp/peg/test_grammar.peg")
+(load-config :filename "/Users/max/Developer/cl-peg/test_grammar.peg")
 
 ;; go from lowest to highest precedence
 (defun load-grammar (grammar-str)
