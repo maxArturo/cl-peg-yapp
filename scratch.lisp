@@ -29,3 +29,9 @@
     (funcall #'peg-parser::literal-char-terminal #\a))
   (coerce "figar" 'list))
 
+; zero or more
+(funcall 
+  (funcall #'peg-parser::zero-or-more
+    (funcall #'peg-parser::literal-char-terminal #\f))
+  (coerce "" 'list))
+

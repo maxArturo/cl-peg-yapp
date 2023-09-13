@@ -62,4 +62,23 @@
            (list :result (third results) 
                  :remainder (second results))))))
 
+(defun zero-or-more (expr)
+  "applies expr greedily, and never fails"
+  (lambda (input)
+    (let ((results 
+     (multiple-value-list (for:for 
+      ((curr-ans = (funcall expr input))
+       ((&key result remainder) = curr-ans)
+       (expressions 
+         reducing result :by 
+         (lambda (prev-result curr-result) 
+            (concatenate 'list prev-result curr-result))))
+       ; (print "curr ans is")
+       ; (print curr-ans)
+       (returning input)
+       (while curr-ans)
+       (setf input remainder)))))
+      ; (print results)
+      (list :result (second results) 
+            :remainder (first results)))))
 
