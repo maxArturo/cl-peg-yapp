@@ -3,6 +3,8 @@
 # some words and spaces, that's it
 # example taken from https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
 
+
+# Here is a grammar for basic math
 Expr     <- Factor AddExpr*
 AddExpr  <- ('+'/'-') Factor
 Factor   <- Primary MulExpr*
@@ -14,5 +16,17 @@ Primary  <- '(' Expr ')'
 
 Number   <- [0-9]+
 Variable <- identifier
+
+
+# And here is one for a sentence/text bloc.
+TextBlock <- Sentence+ TextBlockTerminal
+TextBlockTerminal <- Cr / Lf / (Cr Lf)
+Cr <- '\r'
+Lf <- '\n'
+Sentence <- (!SentenceTerminal Word)+ SentenceTerminal
+SentenceTerminal <- '.' / '!' / '?'
+Word <- (!WordTerminal [A-Za-z])+
+WordTerminal <- Space / ',' / '-' / ';'
+Space <- ' '
 
 
