@@ -11,14 +11,16 @@
   (declare (list input))
   (let ((curr (car input)))
     (and (characterp curr) 
-         (list :result curr :remainder (cdr input)))))
+         (list :result '(curr) :remainder (cdr input)))))
 
 (defun literal-char-terminal (literal-char)
   "returns higher-order function that tests
    against a specific char."
   (lambda (input) 
-    (and (char= literal-char (car input))
-         (list :result (car input) :remainder (cdr input)))))
+    (and (characterp (car input)) 
+      (char= literal-char (car input))
+         (list :result (list (car input))  
+               :remainder (cdr input)))))
 
 (defun negate (expr)
   "implements negative-lookahead for a PEG expr.
@@ -29,7 +31,7 @@
     (declare (list input))
     (let ((ans (funcall expr input)))
       (if ans NIL
-         (list :result NIL :remainder input)))))
+         (list :result '(NIL) :remainder input)))))
 
 (defun compose (&rest exprs)
   "returns a higher order function. 
@@ -44,18 +46,20 @@
     (let ((results 
      (multiple-value-list 
        (for:for 
-        ((expr over exprs)
-         (curr-ans = (funcall expr input))
-         ((&key result remainder) = curr-ans)
-         (expressions when curr-ans reducing result :by 
-           (lambda (prev-result curr-result) 
-              (concatenate 'list prev-result curr-result))))
-        (print "curr ans is")
-        (print curr-ans)
-        (always curr-ans)
-        (if remainder (setf input remainder))
-        (returning input)))))
-      (print results)
-      (and (first results) (cdr results)))))
+         ((expr over exprs)
+          (curr-ans = (funcall expr input))
+          ((&key result remainder) = curr-ans)
+          (expressions when curr-ans reducing result :by 
+            (lambda (prev-result curr-result) 
+               (concatenate 'list prev-result curr-result))))
+         ; (print "curr ans is")
+         ; (print curr-ans)
+         (always curr-ans)
+         (setf input remainder)
+         (returning input)))))
+      ;( print results)
+      (and (first results) 
+           (list :result (third results) 
+                 :remainder (second results))))))
 
 
