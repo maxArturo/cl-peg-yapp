@@ -82,3 +82,17 @@
       (list :result (second results) 
             :remainder (first results)))))
 
+(defun one-or-more (expr)
+  "will apply expr greedily. Must succeed at least
+   once"
+  (lambda (input)
+    (funcall 
+      (compose expr (funcall #'zero-or-more expr))
+      input)))
+
+(defun optional (expr)
+  "applies expr zero or one times"
+  (lambda (input)
+    (let ((result (funcall expr input)))
+     (or result (list :result '(NIL) :remainder input)))))
+

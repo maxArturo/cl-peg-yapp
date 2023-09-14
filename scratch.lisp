@@ -35,3 +35,9 @@
     (funcall #'peg-parser::literal-char-terminal #\f))
   (coerce "" 'list))
 
+; one or more
+(funcall 
+  (funcall #'peg-parser::one-or-more
+    (funcall #'peg-parser::literal-char-terminal #\f))
+  (coerce "ffigaro" 'list))
+
