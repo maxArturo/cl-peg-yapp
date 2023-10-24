@@ -11,7 +11,7 @@
 
 ; negate
 (funcall 
-  (funcall 'peg-parser::negate  'peg-parser::char-terminal) 
+  (funcall #'peg-parser::negate (funcall 'peg-parser::literal-char-terminal #\i))
   (coerce "figaro" 'list)) 
 
 (funcall 
@@ -39,5 +39,19 @@
 (funcall 
   (funcall #'peg-parser::one-or-more
     (funcall #'peg-parser::literal-char-terminal #\f))
-  (coerce "ffigaro" 'list))
+  (coerce "igaro" 'list))
 
+; optional
+(funcall 
+  (funcall #'peg-parser::optional
+    (funcall #'peg-parser::literal-char-terminal #\f))
+  (coerce "jigaro" 'list))
+
+; parse line end
+(line-end (coerce "jigaro" 'list))
+(line-end (list #\CR))
+
+; parse peg comment
+(comment-line (coerce "jigaro" 'list))
+(comment-line (coerce "# jigaro" 'list))
+(comment-line (list #\CR))

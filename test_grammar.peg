@@ -18,7 +18,12 @@ Number   <- [0-9]+
 Variable <- identifier
 
 
-# And here is one for a sentence/text bloc.
+# And here is one for a document.
+Document <- (Paragraph Endline Endline)+
+Paragraph <- (!Endline Sentence)+ Endline
+
+EndLine     <- LF / CRLF / CR
+
 TextBlock <- Sentence+ TextBlockTerminal
 TextBlockTerminal <- Cr / Lf / (Cr Lf)
 Cr <- '\r'

@@ -13,3 +13,8 @@
  :in peg-suite
  :description "Suite for peg parser")
 
+#+5am
+(5am:def-suite peg-grammar-suite
+ :in peg-suite
+ :description "Suite for peg grammar parser")
+

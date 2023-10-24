@@ -14,5 +14,6 @@
                (:file "test-suites")
                (:file "structs")
                (:file "grammar")
-               (:file "parser")))
+               (:file "parser")
+               (:file "peg-parser")))
 

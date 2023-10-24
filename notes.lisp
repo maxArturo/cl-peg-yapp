@@ -9,7 +9,7 @@
 ;;; 
 ;;; so when you call a parser your output will for sure be a list, maybe like this:
 ;;; 
-;;; '(#\h  #\e #\y)
+;;; '(#\h #\e #\y)
 ;;; 
 ;;; Additionally, if you're parsing something that hasn't consumed all the input then it should return the
 ;;; remainder. Its all a list of chars really. Maybe let's just make it explicit with a plist? 
@@ -17,10 +17,19 @@
 ;;; '(:result NIL :remainder '(...))
 ;;; '(:result #S(EXPRESSION :kind :word :value '(#\a #\h)) :remainder '(...))
 ;;; 
+;;; also, successful parsings that do not consume input will be represented 
+;;; as a list with a single NIL, and the input intact; eg.:
+;;; 
+(funcall 
+  (funcall #'peg-parser::negate (funcall 'peg-parser::literal-char-terminal #\i))
+  (coerce "figaro" 'list))
+;;; => (:RESULT (NIL) :REMAINDER (#\f #\i #\g #\a #\r #\o)
 ;;; 
 ;;; 
 ;;; 
+;;; TODO: emit separate 'empty match' symbol to differentiate between
+;;; "empty" matches (such as negatives, which do not consume but 
+;;; otherwise succeed) and actual failures (which should return NIL).
 ;;; 
 ;;; 
-;;; 
-;;; 
+

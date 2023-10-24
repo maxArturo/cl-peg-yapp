@@ -11,7 +11,7 @@
   (declare (list input))
   (let ((curr (car input)))
     (and (characterp curr) 
-         (list :result '(curr) :remainder (cdr input)))))
+         (list :result (list curr) :remainder (cdr input)))))
 
 (defun literal-char-terminal (literal-char)
   "returns higher-order function that tests
@@ -95,4 +95,14 @@
   (lambda (input)
     (let ((result (funcall expr input)))
      (or result (list :result '(NIL) :remainder input)))))
+
+(defun or-expr (&rest exprs)
+  "attempts exprs, until one succeeds.
+   Returns NIL otherwise"
+  (lambda (input)
+    (for:for 
+      ((expr over exprs)
+       (curr-ans = (funcall expr input)))
+         (until curr-ans)
+         (returning curr-ans))))
 
