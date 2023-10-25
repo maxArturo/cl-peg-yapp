@@ -31,7 +31,7 @@
     (declare (list input))
     (let ((ans (funcall expr input)))
       (if ans NIL
-         (list :result '(NIL) :remainder input)))))
+         (list :result '(:success) :remainder input)))))
 
 (defun compose (&rest exprs)
   "returns a higher order function. 
@@ -51,8 +51,10 @@
           ((&key result remainder) = curr-ans)
           (expressions when curr-ans reducing result :by 
             (lambda (prev-result curr-result) 
-               (concatenate 'list prev-result curr-result))))
-         ; (print "curr ans is")
+              (cond
+                ((eql :success (first curr-result))  prev-result)
+                ((eql :success (first prev-result))  curr-result)
+                ('t (concatenate 'list prev-result curr-result))))))
          ; (print curr-ans)
          (always curr-ans)
          (setf input remainder)
@@ -69,8 +71,8 @@
      (multiple-value-list (for:for 
       ((curr-ans = (funcall expr input))
        ((&key result remainder) = curr-ans)
-       (expressions 
-         reducing result :by 
+       (expressions
+         reducing result :by
          (lambda (prev-result curr-result) 
             (concatenate 'list prev-result curr-result))))
        ; (print "curr ans is")
@@ -94,7 +96,7 @@
   "applies expr zero or one times"
   (lambda (input)
     (let ((result (funcall expr input)))
-     (or result (list :result '(NIL) :remainder input)))))
+     (or result (list :result '(:success) :remainder input)))))
 
 (defun or-expr (&rest exprs)
   "attempts exprs, until one succeeds.
