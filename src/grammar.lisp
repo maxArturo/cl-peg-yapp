@@ -103,7 +103,7 @@
   "applies expr zero or one times"
   (lambda (input)
     (let ((result (funcall expr input)))
-     (or result (list :result '(:empty-success) :remainder input)))))
+     (or result (list :result (list *empty-terminal*) :remainder input)))))
 
 (defun or-expr (&rest exprs)
   "attempts exprs, until one succeeds.

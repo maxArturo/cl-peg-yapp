@@ -73,11 +73,13 @@
   (coerce "figaro" 'list))
 
 ; parse line end
-(line-end (coerce "jigaro" 'list))
-(line-end (list #\CR))
+(funcall (line-end) (coerce "jigaro" 'list))
+(funcall (line-end) (list #\CR))
+(funcall (line-end) (coerce "#jigaro" 'list)) 
 
 ; parse peg comment
-(comment-line (coerce "#jigaro" 'list))
-(comment-line (coerce "jigaro" 'list))
-(comment-line (coerce "   ### jigaro" 'list))
-(comment-line (list #\CR))
+(funcall (comment-line) (coerce "jigaro" 'list))
+(funcall (comment-line) (coerce "   ### jigaro" 'list))
+(funcall (comment-line) (list #\CR))
+
+

@@ -8,26 +8,48 @@
 #+5am
 (5am:in-suite grammar-suite)
 
-(defun line-end (input)
+(defun line-end ()
   "parses all combinations of a line ending"
-  (funcall (or-expr 
-    (literal-char-terminal #\cr) 
-    (literal-char-terminal #\lf) 
-    (compose
-      (literal-char-terminal #\cr) 
-      (literal-char-terminal #\lf)))
-    input))
+  (lambda (input)
+    (destructuring-bind 
+      (&key result remainder)
+      (funcall (or-expr 
+        (literal-char-terminal #\cr) 
+        (literal-char-terminal #\lf) 
+        (compose
+          (literal-char-terminal #\cr) 
+          (literal-char-terminal #\lf)))
+        input)
+      (and 
+        result 
+        (list :result 
+              (make-parent 
+        :kind :line-end 
+        :children result)
+              :remainder
+              remainder)))))
 
-(defun comment-line (input)
+(defun comment-line ()
   "parses a full comment line"
-  (funcall (compose 
-    (zero-or-more 
-      (literal-char-terminal #\space))
-    (literal-char-terminal #\#) 
-    (zero-or-more 
-      (compose
-        (negate #'line-end)
-        #'char-terminal))
-    (optional #'line-end)) input))
+  (lambda (input)
+    (destructuring-bind 
+      (&key result remainder)
+      (funcall (compose 
+        (zero-or-more 
+          (literal-char-terminal #\space))
+        (literal-char-terminal #\#) 
+        (zero-or-more 
+          (compose
+            (negate (line-end))
+            (char-terminal)))
+        (optional (line-end))) input) 
+      (and 
+        result 
+        (list :result 
+              (make-parent 
+        :kind :comment-line
+        :children result)
+              :remainder
+              remainder)))))
 
 
