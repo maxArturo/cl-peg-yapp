@@ -1,3 +1,6 @@
+# heavily based on the original paper and
+# https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
+#
 # start with the smallest subset possible
 # for now characters are self defining
 # some words and spaces, that's it
@@ -34,4 +37,7 @@ Word <- (!WordTerminal [A-Za-z])+
 WordTerminal <- Space / ',' / '-' / ';'
 Space <- ' '
 
+# here is one for the spec itself
+CommentLine <- SP* ('# ' Comment)? EndLine
+Definition <- Identifier SP+ '<--' SP+ Expression   # significant
 

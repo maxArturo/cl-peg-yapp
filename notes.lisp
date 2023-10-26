@@ -25,11 +25,8 @@
   (coerce "figaro" 'list))
 ;;; => (:RESULT (NIL) :REMAINDER (#\f #\i #\g #\a #\r #\o)
 ;;; 
+;;; The way we distinguish empty successful matches is with a symbol of :empty-success
 ;;; 
-;;; 
-;;; TODO: emit separate 'empty match' symbol to differentiate between
-;;; "empty" matches (such as negatives, which do not consume but 
-;;; otherwise succeed) and actual failures (which should return NIL).
 ;;; 
 ;;; 
 

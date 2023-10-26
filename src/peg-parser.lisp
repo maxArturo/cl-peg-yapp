@@ -1,5 +1,8 @@
 ;;;; parser for actual peg grammar file
 
+;;; Here we include PEG non terminals which will be
+;;; considered parent nodes.
+
 (in-package #:peg-parser)
 
 #+5am
@@ -18,6 +21,8 @@
 (defun comment-line (input)
   "parses a full comment line"
   (funcall (compose 
+    (zero-or-more 
+      (literal-char-terminal #\space))
     (literal-char-terminal #\#) 
     (zero-or-more 
       (compose
