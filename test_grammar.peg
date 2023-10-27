@@ -40,4 +40,10 @@ Space <- ' '
 # here is one for the spec itself
 CommentLine <- SP* ('# ' Comment)? EndLine
 Definition <- Identifier SP+ '<--' SP+ Expression   # significant
+ExpressionId <- (Upper Lower+)+
+
+
+
+
+
 

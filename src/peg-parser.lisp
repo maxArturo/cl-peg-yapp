@@ -52,4 +52,25 @@
               :remainder
               remainder)))))
 
-
+(defun ExpressionId ()
+  "Evaluates an expression id in PEG notation"
+  (lambda (input)
+    (destructuring-bind 
+      (&key result remainder)
+      (funcall (compose 
+        (zero-or-more 
+          (literal-char-terminal #\space))
+        (literal-char-terminal #\#) 
+        (zero-or-more 
+          (compose
+            (negate (line-end))
+            (char-terminal)))
+        (optional (line-end))) input) 
+      (and 
+        result 
+        (list :result 
+              (make-parent 
+        :kind :comment-line
+        :children result)
+              :remainder
+              remainder)))))
