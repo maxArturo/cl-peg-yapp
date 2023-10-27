@@ -19,6 +19,10 @@
           :result 
           (list (make-terminal :value curr)) 
           :remainder (cdr input))))))
+#+5am
+(5am:test char-terminal-test
+    (5am:is (funcall (char-terminal) (coerce "funky" 'list)))
+    (5am:is (eq NIL (funcall (char-terminal) '()))))
 
 (defun literal-char-terminal (literal-char)
   "returns higher-order function that tests
@@ -28,6 +32,31 @@
       (char= literal-char (car input))
          (list :result (list (make-terminal :value (car input)))  
                :remainder (cdr input)))))
+
+#+5am
+(5am:test literal-char-terminal-test
+    (5am:is (funcall (literal-char-terminal #\f) 
+                     (coerce "funky" 'list)))
+    (5am:is (eq NIL 
+      (funcall (literal-char-terminal #\f) 
+               (coerce "tunky" 'list)))))
+
+(defun char-range-terminal (start-char end-char)
+  "Parses against a code-point range of two given chars.
+   Roughly equivalent to a regex range, e.g. [a-z]"
+  (lambda (input) 
+    (and 
+      (characterp (car input)) 
+      (char<= start-char (car input)) (char>= end-char (car input))  
+      (list :result (list (make-terminal :value (car input)))  
+            :remainder (cdr input)))))
+#+5am
+(5am:test char-range-terminal-test
+    (5am:is (funcall (char-range-terminal #\f #\i) 
+                     (coerce "hunky" 'list)))
+    (5am:is (eq NIL 
+      (funcall (char-range-terminal #\f #\i) 
+               (coerce "tunky" 'list)))))
 
 (defun negate (expr)
   "implements negative-lookahead for a PEG expr.
@@ -41,6 +70,17 @@
          (list 
            :result (list *empty-terminal*) 
            :remainder input)))))
+#+5am
+(5am:test negate-test
+    (5am:is 
+      (funcall (negate 
+        (funcall 'peg-parser::literal-char-terminal #\i))
+        (coerce "figaro" 'list)))
+    (5am:is (eq NIL 
+      (funcall 
+        (negate  
+          (literal-char-terminal #\f))
+        (coerce "figaro" 'list)))))
 
 (defun compose (&rest exprs)
   "returns a higher order function. 
@@ -50,7 +90,6 @@
    (list (list ...nodes) (list 'result some-res 'remainder rem-input)
    This has the effect of applying parens on these
    expressions."
-  
   (lambda (input)
     (let ((results 
      (multiple-value-list 
@@ -73,7 +112,24 @@
       (and (first results) 
            (list :result (third results) 
                  :remainder (second results))))))
-
+#+5am
+(5am:test compose-test
+  (5am:is 
+    (funcall 
+      (compose
+        (literal-char-terminal #\f) 
+        (literal-char-terminal #\i) 
+        (literal-char-terminal #\g) 
+        (literal-char-terminal #\a))
+      (coerce "figar" 'list)))
+  (5am:is (eq NIL
+    (funcall 
+      (compose
+        (literal-char-terminal #\i) 
+        (literal-char-terminal #\g) 
+        (literal-char-terminal #\a))
+      (coerce "figar" 'list)))))
+   
 (defun zero-or-more (expr)
   "applies expr greedily, and never fails"
   (lambda (input)
@@ -90,6 +146,21 @@
        (setf input remainder)))))
       (list :result (or (second results) (list *empty-terminal*))
             :remainder (first results)))))
+#+5am
+(5am:test zero-or-more-test
+  (5am:is (equalp *empty-terminal*
+    (first (getf 
+      (funcall 
+        (zero-or-more (literal-char-terminal #\f))
+        (coerce "booyah" 'list))               
+      :result))))
+  (5am:is (equalp (make-terminal :value #\h)
+    (first (getf 
+      (funcall 
+        (zero-or-more
+          (char-terminal))
+        (coerce "hello" 'list))
+      :result)))))
 
 (defun one-or-more (expr)
   "will apply expr greedily. Must succeed at least
@@ -98,6 +169,15 @@
     (funcall 
       (compose expr (funcall #'zero-or-more expr))
       input)))
+(5am:test one-or-more-test
+  (5am:is (eq NIL
+    (funcall 
+      (one-or-more
+        (literal-char-terminal #\f))
+      (coerce "igaro" 'list))))
+
+  ; TODO add success case here
+  )
 
 (defun optional (expr)
   "applies expr zero or one times"

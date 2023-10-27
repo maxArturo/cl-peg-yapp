@@ -2,6 +2,7 @@
 ;,delete-system-fasls RET system name to remove everything 
 
 (coerce "hey you" 'list)
+
 ; base functionality
 (funcall (funcall #'peg-parser::char-terminal) 
   (coerce "hey you" 'list))
@@ -11,6 +12,15 @@
 
 (funcall (funcall 'peg-parser::literal-char-terminal #\f)
   (coerce "figaro" 'list)) 
+
+; char range 
+;fails
+(funcall (char-range-terminal #\b #\e)
+  (coerce "figaro" 'list)) 
+
+;succeeds
+(funcall (char-range-terminal #\b #\e)
+  (coerce "bigaro" 'list)) 
 
 ; negate
 (funcall 
