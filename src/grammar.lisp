@@ -99,7 +99,6 @@
           ((&key result remainder) = curr-ans)
           (expressions when curr-ans reducing result :by 
             (lambda (prev-result curr-result) 
-              ; compact emtpy success nodes
               (cond
                 ((equalp *empty-terminal*
                          (first curr-result)) prev-result)
@@ -175,15 +174,27 @@
       (one-or-more
         (literal-char-terminal #\f))
       (coerce "igaro" 'list))))
-
-  ; TODO add success case here
-  )
+  (5am:is (funcall
+    (one-or-more
+      (literal-char-terminal #\f))
+    (coerce "figaro" 'list))))
 
 (defun optional (expr)
   "applies expr zero or one times"
   (lambda (input)
     (let ((result (funcall expr input)))
      (or result (list :result (list *empty-terminal*) :remainder input)))))
+(5am:test optional-test
+  (5am:is (equalp *empty-terminal*
+    (first (getf 
+      (funcall (optional (literal-char-terminal #\f))
+        (coerce "jigaro" 'list))                
+      :result))))
+  (5am:is (equalp (make-terminal :value #\f)
+    (first (getf 
+      (funcall (optional (literal-char-terminal #\f))
+        (coerce "figaro" 'list))                 
+      :result)))))
 
 (defun or-expr (&rest exprs)
   "attempts exprs, until one succeeds.
@@ -194,4 +205,20 @@
        (curr-ans = (funcall expr input)))
          (until curr-ans)
          (returning curr-ans))))
+(5am:test or-expr-test
+  (5am:is 
+    (funcall 
+      (or-expr
+        (literal-char-terminal #\f) 
+        (literal-char-terminal #\i) 
+        (literal-char-terminal #\g) 
+        (literal-char-terminal #\a))
+      (coerce "arigar" 'list)))
+  (5am:is (eq NIL
+    (funcall 
+      (or-expr
+        (literal-char-terminal #\i) 
+        (literal-char-terminal #\g) 
+        (literal-char-terminal #\a))
+      (coerce "rigar" 'list)))))
 

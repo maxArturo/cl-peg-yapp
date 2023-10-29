@@ -29,7 +29,7 @@
 
 (funcall 
   (funcall 
-    'peg-parser::negate  
+   'peg-parser::negate  
     (funcall 'peg-parser::literal-char-terminal #\f))
   (coerce "figaro" 'list)) 
 
