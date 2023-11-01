@@ -39,5 +39,3 @@
   (list :literal :eps :dot :range))
 
 
-
-

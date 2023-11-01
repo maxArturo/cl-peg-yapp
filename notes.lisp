@@ -21,7 +21,7 @@
 ;;; as a list with a single NIL, and the input intact; eg.:
 ;;; 
 (funcall 
-  (funcall #'peg-parser::negate (funcall 'peg-parser::literal-char-terminal #\i))
+  (funcall #'peg-parser::negative-lookahead (funcall 'peg-parser::literal-char-terminal #\i))
   (coerce "figaro" 'list))
 ;;; => (:RESULT (NIL) :REMAINDER (#\f #\i #\g #\a #\r #\o)
 ;;; 

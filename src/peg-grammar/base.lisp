@@ -3,10 +3,10 @@
 ;;; This file includes basic terminal definitions, as well
 ;;; as operators on both terminals and non-terminals.
 
-(in-package #:peg-parser)
+(in-package #:peg-grammar)
 
 #+5am
-(5am:in-suite parser-suite)
+(5am:in-suite grammar-suite)
 
 (defun char-terminal ()
   "returns the car of input list if it
@@ -32,7 +32,6 @@
       (char= literal-char (car input))
          (list :result (list (make-terminal :value (car input)))  
                :remainder (cdr input)))))
-
 #+5am
 (5am:test literal-char-terminal-test
     (5am:is (funcall (literal-char-terminal #\f) 
@@ -58,7 +57,20 @@
       (funcall (char-range-terminal #\f #\i) 
                (coerce "tunky" 'list)))))
 
-(defun negate (expr)
+(defun positive-lookahead (expr)
+  "implements positive lookahead for a PEG expr.
+   Function returns NIL if expression fails.
+   Otherwise returns a tuple-list with
+   intact input."
+  (lambda (input)
+    (declare (list input))
+    (let ((ans (funcall expr input)))
+      (and ans
+         (list 
+           :result (list *empty-terminal*) 
+           :remainder input)))))
+
+(defun negative-lookahead (expr)
   "implements negative-lookahead for a PEG expr.
    Function returns NIL if expression succeeds.
    Otherwise returns a tuple-list with
@@ -71,14 +83,14 @@
            :result (list *empty-terminal*) 
            :remainder input)))))
 #+5am
-(5am:test negate-test
+(5am:test negative-lookahead-test
     (5am:is 
-      (funcall (negate 
-        (funcall 'peg-parser::literal-char-terminal #\i))
+      (funcall (negative-lookahead
+        (literal-char-terminal #\i))
         (coerce "figaro" 'list)))
     (5am:is (eq NIL 
       (funcall 
-        (negate  
+        (negative-lookahead
           (literal-char-terminal #\f))
         (coerce "figaro" 'list)))))
 
@@ -128,7 +140,18 @@
         (literal-char-terminal #\g) 
         (literal-char-terminal #\a))
       (coerce "figar" 'list)))))
-   
+
+
+
+; #+5am
+; (5am:test char-range-terminal-test
+;     (5am:is (funcall (char-range-terminal #\f #\i) 
+;                      (coerce "hunky" 'list)))
+;     (5am:is (eq NIL 
+;       (funcall (char-range-terminal #\f #\i) 
+;                (coerce "tunky" 'list)))))
+
+
 (defun zero-or-more (expr)
   "applies expr greedily, and never fails"
   (lambda (input)
@@ -166,7 +189,7 @@
    once"
   (lambda (input)
     (funcall 
-      (compose expr (funcall #'zero-or-more expr))
+      (compose expr (zero-or-more expr))
       input)))
 (5am:test one-or-more-test
   (5am:is (eq NIL
@@ -221,4 +244,22 @@
         (literal-char-terminal #\g) 
         (literal-char-terminal #\a))
       (coerce "rigar" 'list)))))
+
+(defun parent-expr (expr-lambda parent-kind)
+  "creates the main lambda thunk for applying an 
+   expression. If successful, returns a parent 
+   struct. Returns nil if not valid"
+  (lambda (input) 
+    (destructuring-bind 
+      (&key result remainder)
+      (funcall expr-lambda
+        input)
+      (and 
+        result 
+        (list :result 
+          (list (make-parent 
+            :kind parent-kind
+            :children result)) 
+          :remainder
+          remainder)))))
 

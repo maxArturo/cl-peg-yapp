@@ -9,11 +9,13 @@
   :encoding :utf-8
   :depends-on ("trivia" "for" "cl-ppcre" "alexandria" "cl-interpol")
   :pathname "src/"
-  :components (
-               (:file "package")
-               (:file "test-suites")
-               (:file "structs")
-               (:file "grammar")
-               (:file "parser")
-               (:file "peg-parser")))
+  :components 
+  ((:file "package")
+    (:file "test-suites")
+    (:file "parser")
+    (:module "peg-grammar"
+      :components 
+      ((:file "structs")
+       (:file "base")
+       (:file "expressions")))))
 

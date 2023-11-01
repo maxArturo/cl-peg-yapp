@@ -10,8 +10,7 @@
            #:parser-suite))
 
 (defpackage #:peg-grammar
-  (:use #:cl #:peg)
-  (:export #:weird-sum))
+  (:use #:cl #:peg))
 
 (defpackage #:peg-parser
   (:use #:cl #:peg))
