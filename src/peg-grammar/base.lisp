@@ -6,7 +6,7 @@
 (in-package #:peg-grammar)
 
 #+5am
-(5am:in-suite grammar-suite)
+(5am:def-suite* base-suite :in grammar-suite)
 
 (defun char-terminal ()
   "returns the car of input list if it
@@ -182,6 +182,40 @@
         (literal-char-terminal #\a))
       (coerce "figar" 'list)))))
 
+(defun times (expr times)
+  "Applies expr n times"
+  (lambda (input)
+    (let ((results 
+     (multiple-value-list 
+       (for:for 
+         ((i repeat times)
+          (curr-ans = (funcall expr input))
+          ((&key result remainder) = curr-ans)
+          (expressions when curr-ans reducing result :by 
+            (lambda (prev-result curr-result) 
+              (cond
+                ((equalp *empty-terminal*
+                         (first curr-result)) prev-result)
+                ((equalp *empty-terminal* 
+                         (first prev-result)) curr-result)
+                ('t (concatenate 'list prev-result curr-result))))))
+         (always curr-ans)
+         (setf input remainder)
+         (returning input)))))
+      (and (first results) 
+           (list :result (third results) 
+                 :remainder (second results))))))
+#+5am
+(5am:test times-test
+  (5am:is 
+    (funcall 
+      (times (char-terminal) 5)
+      (coerce "figar" 'list)))
+  (5am:is (eq NIL
+    (funcall 
+      (times (char-terminal) 6)
+      (coerce "figar" 'list)))))
+
 (defun zero-or-more (expr)
   "applies expr greedily, and never fails"
   (lambda (input)
@@ -232,7 +266,7 @@
       (literal-char-terminal #\f))
     (coerce "figaro" 'list))))
 
-(defun optional (expr)
+(defun optional-expr (expr)
   "applies expr zero or one times"
   (lambda (input)
     (let ((result (funcall expr input)))
@@ -240,12 +274,12 @@
 (5am:test optional-test
   (5am:is (equalp *empty-terminal*
     (first (getf 
-      (funcall (optional (literal-char-terminal #\f))
+      (funcall (optional-expr (literal-char-terminal #\f))
         (coerce "jigaro" 'list))                
       :result))))
   (5am:is (equalp (make-terminal :value #\f)
     (first (getf 
-      (funcall (optional (literal-char-terminal #\f))
+      (funcall (optional-expr (literal-char-terminal #\f))
         (coerce "figaro" 'list))                 
       :result)))))
 
@@ -274,6 +308,20 @@
         (literal-char-terminal #\g) 
         (literal-char-terminal #\a))
       (coerce "rigar" 'list)))))
+
+(defun string-expr (input)
+  "parses a provided string"
+  (declare (string input))
+  (let ((str (coerce input 'list))) 
+    (apply #'compose 
+      (mapcar (lambda (el) (literal-char-terminal el))
+              str))))
+#+5am
+(5am:test string-expr-test
+  (5am:is (funcall (string-expr "hello")
+      (coerce "hello world" 'list)))
+  (5am:is (eq NIL (funcall (min-one)
+    (coerce "!buthwy" 'list)))))
 
 (defun parent-expr (expr-lambda parent-kind)
   "creates the main lambda thunk for applying an 

@@ -1,4 +1,3 @@
-;;; 
 ;;; A parser will return one or more nodes. They are one of 
 ;;; - parents
 ;;; - terminals
@@ -28,5 +27,5 @@
 ;;; The way we distinguish empty successful matches is with a symbol of :empty-success
 ;;; 
 ;;; 
-;;; 
+;;; RE: the peg implementation
 
