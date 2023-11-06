@@ -58,34 +58,6 @@
     (funcall (comment-endline) 
              (coerce "jigaro" 'list)))))
 
-(defun upper-case ()
-  "parses an upper-case letter in the ascii range
-   A-Z."
-  (parent-expr 
-    (char-range-terminal #\A #\Z)
-    :upper-case))
-(5am:test upper-case-test
-  (5am:is 
-    (funcall (upper-case)
-             (coerce "First" 'list)))
-  (5am:is (eq NIL
-    (funcall (upper-case)
-             (coerce "jigaro" 'list)))))
-
-(defun lower-case ()
-  "parses an upper-case letter in the ascii range
-   a-z."
-  (parent-expr 
-    (char-range-terminal #\a #\z) 
-    :lower-case))
-(5am:test lower-case-test
-  (5am:is 
-    (funcall (lower-case)
-             (coerce "first" 'list)))
-  (5am:is (eq NIL
-    (funcall (lower-case)
-             (coerce "Jigaro" 'list)))))
-
 (defun expression-id ()
   "parses an expression identifier in PEG notation"
   (parent-expr
@@ -165,23 +137,91 @@
       (expression-id)
       (coerce "dathing" 'list)))))
 
+(defun char-range-literal ()
+  "parses a literal range of chars, e.g. 'a-z' or 
+   '0-9'. Ranges must have a dash and must not start
+   with a dash."
+  (parent-expr (compose 
+    (negative-lookahead (literal-char-terminal #\-))
+    (char-terminal)
+    (literal-char-terminal #\-)
+    (negative-lookahead (literal-char-terminal #\-))
+    (char-terminal))
+    :char-range-literal))
+#+5am
+(5am:test char-range-literal-test
+  (5am:is 
+    (funcall 
+      (char-range-literal)
+      (coerce "a-zforeva" 'list)))
+  (5am:is (eq NIL
+    (funcall 
+      (char-range-literal)
+      (coerce "a--zforeva" 'list))))
+  (5am:is (eq NIL
+    (funcall 
+      (char-range-literal)
+      (coerce "-a--zforeva" 'list))))
+  )
+
 (defun or-literal ()
-  "Parses against a regex-style set of options 
+  "Parses against a regex-style set of char options,
    including ranges, e.g. [A-Za-z0-9]"
-  (lambda (input) 
-    (destructuring-bind 
-      (&key result remainder)
-      (funcall
-        (compose (literal-char-terminal #\[)
-                 
-                 (literal-char-terminal #\]))
-        input)
-      (and 
-        result 
-        (list :result 
-              ; TODO make this the actual terminals
-          (list (make-parent 
-            :kind parent-kind
-            :children result)) 
-          :remainder
-          remainder)))))
+  (parent-expr
+    (compose 
+      (literal-char-terminal #\[)
+      (one-or-more
+        (compose
+          (negative-lookahead (literal-char-terminal #\]))
+          (or-expr 
+            (char-range-literal)
+            (char-terminal))))
+      (literal-char-terminal #\]))
+    :or-literal))
+#+5am
+(5am:test or-literal-test
+  (5am:is 
+    (funcall 
+      (or-literal)
+      (coerce "[`A-Za-z0-9_]" 'list)))
+  (5am:is (eq NIL
+    (funcall 
+      (or-literal)
+      (coerce "[]|`A-Za-z0-9_" 'list)))))
+
+(defun simple-expr ()
+  "an expression that is either a codepoint literal, 
+   a range or a string."
+  (parent-expr
+    (or-expr 
+      (or-literal)
+      (string-literal)
+      (compose 
+        (literal-char-terminal #\u)
+        (char-terminal)))
+    :simple-expr))
+#+5am
+(5am:test simple-expr-test
+  (5am:is 
+    (funcall 
+      (simple-expr)
+      (coerce "[`A-Za-z0-9_]" 'list)))
+  (5am:is (eq NIL
+    (funcall 
+      (or-literal)
+      (coerce "[]|`A-Za-z0-9_" 'list)))))
+
+(defun primary-expr ()
+  ""
+  )
+
+(defun neg-look-expr ()
+  "implements a negative lookahead in peg, e.g.
+   `!'abc'`."
+  (parent-expr
+    (compose 
+      (literal-char-terminal #\!)
+
+      )
+    :neg-look-expr))
+

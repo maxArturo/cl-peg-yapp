@@ -17,5 +17,7 @@
       :components 
       ((:file "structs")
        (:file "base")
+       (:file "literal")
+       (:file "quant")
        (:file "expressions")))))
 

@@ -40,6 +40,47 @@
       (funcall (literal-char-terminal #\f) 
                (coerce "tunky" 'list)))))
 
+(defun upper-case ()
+  "parses an upper-case letter in the ascii range
+   A-Z."
+  (parent-expr 
+    (char-range-terminal #\A #\Z)
+    :upper-case))
+(5am:test upper-case-test
+  (5am:is 
+    (funcall (upper-case)
+             (coerce "First" 'list)))
+  (5am:is (eq NIL
+    (funcall (upper-case)
+             (coerce "jigaro" 'list)))))
+
+(defun lower-case ()
+  "parses an upper-case letter in the ascii range
+   a-z."
+  (parent-expr 
+    (char-range-terminal #\a #\z) 
+    :lower-case))
+(5am:test lower-case-test
+  (5am:is 
+    (funcall (lower-case)
+             (coerce "first" 'list)))
+  (5am:is (eq NIL
+    (funcall (lower-case)
+             (coerce "Jigaro" 'list)))))
+
+(defun digit ()
+  "parses a digit in the ascii range."
+  (parent-expr 
+    (char-range-terminal #\0 #\9) 
+    :digit))
+(5am:test digit-test
+  (5am:is 
+    (funcall (digit)
+             (coerce "0bacon" 'list)))
+  (5am:is (eq NIL
+    (funcall (digit)
+             (coerce "oneBacon" 'list)))))
+
 (defun char-range-terminal (start-char end-char)
   "Parses against a code-point range of two given chars.
    Roughly equivalent to a regex range, e.g. [a-z]"
@@ -140,17 +181,6 @@
         (literal-char-terminal #\g) 
         (literal-char-terminal #\a))
       (coerce "figar" 'list)))))
-
-
-
-; #+5am
-; (5am:test char-range-terminal-test
-;     (5am:is (funcall (char-range-terminal #\f #\i) 
-;                      (coerce "hunky" 'list)))
-;     (5am:is (eq NIL 
-;       (funcall (char-range-terminal #\f #\i) 
-;                (coerce "tunky" 'list)))))
-
 
 (defun zero-or-more (expr)
   "applies expr greedily, and never fails"

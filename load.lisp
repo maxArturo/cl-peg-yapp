@@ -11,7 +11,5 @@
 (asdf:make "cl-peg")
 (asdf:load-system "cl-peg" :force t)
 (interpol:enable-interpol-syntax)
-(5am:run! 'peg:parser-suite)
 (5am:run! 'peg:grammar-suite)
-
 
