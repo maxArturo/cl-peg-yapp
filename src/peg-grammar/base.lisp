@@ -40,47 +40,6 @@
       (funcall (literal-char-terminal #\f) 
                (coerce "tunky" 'list)))))
 
-(defun upper-case ()
-  "parses an upper-case letter in the ascii range
-   A-Z."
-  (parent-expr 
-    (char-range-terminal #\A #\Z)
-    :upper-case))
-(5am:test upper-case-test
-  (5am:is 
-    (funcall (upper-case)
-             (coerce "First" 'list)))
-  (5am:is (eq NIL
-    (funcall (upper-case)
-             (coerce "jigaro" 'list)))))
-
-(defun lower-case ()
-  "parses an upper-case letter in the ascii range
-   a-z."
-  (parent-expr 
-    (char-range-terminal #\a #\z) 
-    :lower-case))
-(5am:test lower-case-test
-  (5am:is 
-    (funcall (lower-case)
-             (coerce "first" 'list)))
-  (5am:is (eq NIL
-    (funcall (lower-case)
-             (coerce "Jigaro" 'list)))))
-
-(defun digit ()
-  "parses a digit in the ascii range."
-  (parent-expr 
-    (char-range-terminal #\0 #\9) 
-    :digit))
-(5am:test digit-test
-  (5am:is 
-    (funcall (digit)
-             (coerce "0bacon" 'list)))
-  (5am:is (eq NIL
-    (funcall (digit)
-             (coerce "oneBacon" 'list)))))
-
 (defun char-range-terminal (start-char end-char)
   "Parses against a code-point range of two given chars.
    Roughly equivalent to a regex range, e.g. [a-z]"
@@ -312,31 +271,31 @@
 (defun string-expr (input)
   "parses a provided string"
   (declare (string input))
-  (let ((str (coerce input 'list))) 
-    (apply #'compose 
-      (mapcar (lambda (el) (literal-char-terminal el))
-              str))))
+    (let ((check (coerce input 'list))) 
+      (apply #'compose 
+        (mapcar (lambda (el) (literal-char-terminal el))
+                check))))
 #+5am
 (5am:test string-expr-test
-  (5am:is (funcall (string-expr "hello")
+  (5am:is (funcall (string-expr "hello") 
       (coerce "hello world" 'list)))
-  (5am:is (eq NIL (funcall (min-one)
-    (coerce "!buthwy" 'list)))))
+  (5am:is (eq NIL (funcall (string-expr "hello")
+    (coerce "hella" 'list)))))
 
-(defun parent-expr (expr-lambda parent-kind)
-  "creates the main lambda thunk for applying an 
+(defmacro define-parent-expr (parent-kind expr-lambda)
+  "defines the main lambda thunk for applying an 
    expression. If successful, returns a parent 
    struct. Returns nil if not valid"
-  (lambda (input) 
+  `(defun ,parent-kind (input)
     (destructuring-bind 
       (&key result remainder)
-      (funcall expr-lambda
+      (funcall ,expr-lambda
         input)
       (and 
         result 
         (list :result 
           (list (make-parent 
-            :kind parent-kind
+            :kind ,(intern (symbol-name parent-kind) "KEYWORD")
             :children result)) 
           :remainder
           remainder)))))

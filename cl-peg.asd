@@ -20,6 +20,5 @@
        (:file "comment")
        (:file "quant")
        (:file "literal")
-       (:file "sequence")
-       (:file "expressions")))))
+       (:file "sequence")))))
 

@@ -6,67 +6,63 @@
 #+5am
 (5am:def-suite* comment-suite :in grammar-suite)
 
-(defun line-end ()
-  "parses all combinations of a line ending"
-  (parent-expr 
-    (or-expr 
-        (literal-char-terminal #\cr) 
-        (literal-char-terminal #\lf) 
-        (compose
-          (literal-char-terminal #\cr) 
-          (literal-char-terminal #\lf)))
-    :line-end))
+; EndLine <- LF / CRLF / CR
+(define-parent-expr end-line
+  (or-expr 
+    (literal-char-terminal #\cr) 
+    (literal-char-terminal #\lf) 
+    (compose
+      (literal-char-terminal #\cr) 
+      (literal-char-terminal #\lf))))
 (5am:test line-end-test
   (5am:is 
-    (funcall (line-end)
+    (funcall 'end-line
              (list #\CR)))
   (5am:is (eq NIL
-    (funcall (line-end)
+    (funcall 'end-line
              (coerce "   jigaro" 'list)))))
 
-(defun comment-line ()
-  "parses a full comment line"
-  (parent-expr 
-    (compose 
-      (zero-or-more 
-        (literal-char-terminal #\space))
-      (literal-char-terminal #\#) 
-      (zero-or-more 
-        (compose
-          (negative-lookahead (line-end))
-          (char-terminal))))
-    :comment-line))
+(define-parent-expr comment-line 
+  (compose 
+    (zero-or-more 
+      (literal-char-terminal #\space))
+    (literal-char-terminal #\#) 
+    (zero-or-more 
+      (compose
+        (negative-lookahead 'line-end)
+        (char-terminal)))))
 (5am:test comment-line-test
   (5am:is 
-    (funcall (comment-line) 
+    (funcall 'comment-line
              (coerce "   ### jigaro" 'list)))
   (5am:is (eq NIL
-    (funcall (comment-line) 
+    (funcall 'comment-line
              (coerce "jigaro" 'list)))))
 
-(defun comment-endline ()
-  (parent-expr 
-    (compose (comment-line) (line-end))
-    :comment-endline))
+; ComEndLine <- SP* ('# ' Comment)? EndLine
+(define-parent-expr comment-endline
+  (compose 'comment-line 'line-end))
 (5am:test comment-endline-test
   (5am:is 
-    (funcall (comment-endline) 
+    (funcall 'comment-endline 
              (list #\# #\Newline)))
   (5am:is (eq NIL
-    (funcall (comment-endline) 
+    (funcall 'comment-endline
              (coerce "jigaro" 'list)))))
 
 ; Spacing <- ComEndLine? SP+
-(defun spacing ()
-  (parent-expr (compose
-    (optional-expr (comment-endline))
-    (one-or-more (literal-char-terminal #\SP)))
-    :spacing))
+(define-parent-expr spacing
+  (compose
+    (optional-expr 'comment-endline)
+    (one-or-more (literal-char-terminal #\SP))))
 (5am:test comment-endline-test
   (5am:is 
-    (funcall (spacing)
+    (funcall 'spacing
+             (list #\SP #\SP)))
+  (5am:is 
+    (funcall 'spacing
              (list #\# #\Newline #\SP #\SP)))
   (5am:is (eq NIL
-    (funcall (spacing)
+    (funcall 'spacing
              (list #\# #\SP #\SP)))))
 

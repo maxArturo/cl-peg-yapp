@@ -7,83 +7,78 @@
 (5am:def-suite* sequence-suite :in grammar-suite)
 
 ; Expression <- Sequence (Spacing '/' SP+ Sequence)*
-(defun expression ()
-  (parent-expr (compose
-    (sequence-expr) 
+(define-parent-expr expression
+  (compose
+    'sequence-expr
     (zero-or-more (compose 
-      (spacing) 
+      'spacing  
       (literal-char-terminal #\/)
       (one-or-more (literal-char-terminal #\SP))
-      (sequence-expr))))
-    :expression))
+      'sequence-expr))))
 
 ; Sequence <- Rule (Spacing Rule)*
-(defun sequence-expr ()
-  (parent-expr 
-    (compose
-      (rule) 
-      (zero-or-more (compose
-        (spacing) (rule))))
-    :sequence))
+(define-parent-expr sequence-expr
+  (compose
+    'rule
+    (zero-or-more (compose
+      'spacing 'rule))))
 
 ; Rule <- PosLook / NegLook / Plain
-(defun rule ()
-  (parent-expr (or-expr
-    (pos-look) (neg-look) (plain))
-    :rule))
+(define-parent-expr rule
+  (or-expr 'pos-look 'neg-look 'plain))
 
 ; CheckId <- (upper lower+)+
-(defun check-id ()
-  (parent-expr (compose 
-    (upper-case) (one-or-more (lower-case)))
-    :check-id))
+(define-parent-expr check-id
+  (compose 'upper-case (one-or-more 'lower-case)))
 #+5am
 (5am:test check-id-test
-  (5am:is (funcall (check-id)
+  (5am:is (funcall 'check-id
       (coerce "Helloworld" 'list)))
   (5am:is (eq NIL 
-    (funcall (check-id)
+    (funcall 'check-id
       (coerce "HelloWorld" 'list)))))
 
-
 ; Plain <- Primary Quant?
-(defun plain ()
-  (parent-expr 
-    (compose (primary) (optional-expr (quant)))
-    :plain))
+(define-parent-expr plain
+  (compose 'primary (optional-expr 'quant)))
+#+5am
+(5am:test plain-test
+  (5am:is (funcall 'plain
+      (coerce "Helloworld" 'list)))
+  (5am:is (eq NIL 
+    (funcall 'plain
+      (coerce "HelloWorld" 'list)))))
 
 ; PosLook <- '&' Primary Quant?
-(defun pos-look ()
-  (parent-expr 
-    (compose (literal-char-terminal #\&) (plain))
-    :pos-look))
+(define-parent-expr pos-look
+  (compose (literal-char-terminal #\&) 'plain))
 
 ; NegLook <- '!' Primary Quant?
-(defun neg-look ()
-  (parent-expr 
-    (compose (literal-char-terminal #\!) (plain))
-    :neg-look))
+(define-parent-expr neg-look
+  (compose (literal-char-terminal #\!) 'plain))
 
 ; Primary <- Simple / CheckId / '(' Expression ')'
-(defun primary ()
-  (parent-expr 
-    (or-expr
-      (simple) (check-id) 
+(define-parent-expr primary
+  (or-expr
+     'simple 'check-id
       (compose 
         (literal-char-terminal #\()
-        (expression)
-        (literal-char-terminal #\))))
-    :primary))
+        'expression
+        (literal-char-terminal #\)))))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
-(defun scan-def ()
-  (parent-expr 
-    (compose
-      (check-id)
-      (one-or-more (literal-char-terminal #\SP))
-      (string-expr "<-")
-      (one-or-more (literal-char-terminal #\SP))
-      (expression))
-    :scan-def))
-
+(define-parent-expr scan-def
+  (compose
+    'check-id
+    (one-or-more (literal-char-terminal #\SP))
+    (string-expr "<-")
+    (one-or-more (literal-char-terminal #\SP))
+   'expression))
+#+5am
+(5am:test scan-def-test
+  (5am:is (funcall 'scan-def
+      (coerce "First <- [a-d]" 'list)))
+  (5am:is (eq NIL 
+    (funcall 'scan-def
+      (coerce "HelloWorld" 'list)))))
 
