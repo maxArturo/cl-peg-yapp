@@ -41,7 +41,10 @@
 
 ; ComEndLine <- SP* ('# ' Comment)? EndLine
 (define-parent-expr comment-endline
-  (compose 'comment-line 'line-end))
+  (compose 
+    (zero-or-more (literal-char-terminal #\SP)) 
+    (optional-expr 'comment-line)
+    'line-end))
 (5am:test comment-endline-test
   (5am:is 
     (funcall 'comment-endline 

@@ -36,7 +36,7 @@
       (coerce "Helloworld" 'list)))
   (5am:is (eq NIL 
     (funcall 'check-id
-      (coerce "HelloWorld" 'list)))))
+      (coerce "helloWorld" 'list)))))
 
 ; Plain <- Primary Quant?
 (define-parent-expr plain
@@ -47,7 +47,10 @@
       (coerce "Helloworld" 'list)))
   (5am:is (eq NIL 
     (funcall 'plain
-      (coerce "HelloWorld" 'list)))))
+      (coerce "helloWorld" 'list))))
+  (5am:is (eq NIL 
+    (funcall 'plain
+      (coerce "333" 'list)))))
 
 ; PosLook <- '&' Primary Quant?
 (define-parent-expr pos-look
@@ -67,18 +70,19 @@
         (literal-char-terminal #\)))))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
-(define-parent-expr scan-def
+(define-parent-expr definition
   (compose
     'check-id
     (one-or-more (literal-char-terminal #\SP))
-    (string-expr "<-")
+    (or-expr (string-expr "<-") 
+      (literal-char-terminal #\LEFTWARDS_ARROW))
     (one-or-more (literal-char-terminal #\SP))
    'expression))
 #+5am
 (5am:test scan-def-test
-  (5am:is (funcall 'scan-def
+  (5am:is (funcall 'definition
       (coerce "First <- [a-d]" 'list)))
   (5am:is (eq NIL 
-    (funcall 'scan-def
+    (funcall 'definition
       (coerce "HelloWorld" 'list)))))
 

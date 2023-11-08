@@ -1,13 +1,15 @@
-;;;; peg grammar parser style implementation
-
 ;;; This file includes basic terminal definitions, as well
-;;; as operators on both terminals and non-terminals.
+;;; as operators on both terminals and non-terminals as described
+;;; for PEG expressions. They can be used for implementing
+;;; a generated parser, including the actual PEG parser. 
 
 (in-package #:peg-grammar)
 
 #+5am
 (5am:def-suite* base-suite :in grammar-suite)
 
+; this is effectively equivalent to 'unicode'
+; in a PEG.
 (defun char-terminal ()
   "returns the car of input list if it
    is a char. otherwise NIL"
@@ -95,8 +97,7 @@
         (coerce "figaro" 'list)))))
 
 (defun compose (&rest exprs)
-  "returns a higher order function. 
-   It applies the output of each expr to the
+  "It applies the output of each expr to the
    next until either one returns NIL, or they all
    succeed. It assumes in/output of 
    (list (list ...nodes) (list 'result some-res 'remainder rem-input)
@@ -142,7 +143,8 @@
       (coerce "figar" 'list)))))
 
 (defun times (expr times)
-  "Applies expr n times"
+  "Applies expr n times, equivalent to
+   `SomeExpr`{n} in PEG notation."
   (lambda (input)
     (let ((results 
      (multiple-value-list 
@@ -176,7 +178,9 @@
       (coerce "figar" 'list)))))
 
 (defun zero-or-more (expr)
-  "applies expr greedily, and never fails"
+  "applies expr greedily, and never fails.
+   Equivalent to the star (*) operator in 
+   PEG notation."
   (lambda (input)
     (let ((results 
      (multiple-value-list (for:for 
@@ -209,7 +213,8 @@
 
 (defun one-or-more (expr)
   "will apply expr greedily. Must succeed at least
-   once"
+   once. Equivalent to the plus (+) operator in 
+   PEG notation."
   (lambda (input)
     (funcall 
       (compose expr (zero-or-more expr))
@@ -226,7 +231,8 @@
     (coerce "figaro" 'list))))
 
 (defun optional-expr (expr)
-  "applies expr zero or one times"
+  "applies expr zero or one times. Equivalent to the
+   star (*) modifier in PEG notation."
   (lambda (input)
     (let ((result (funcall expr input)))
      (or result (list :result (list *empty-terminal*) :remainder input)))))
@@ -244,7 +250,8 @@
 
 (defun or-expr (&rest exprs)
   "attempts exprs, until one succeeds.
-   Returns NIL otherwise"
+   Returns NIL otherwise. Equivalent to the OR
+   (/) operator in PEG notation."
   (lambda (input)
     (for:for 
       ((expr over exprs)
