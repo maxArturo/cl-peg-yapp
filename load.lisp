@@ -7,10 +7,10 @@
 (ql:quickload "for") 
 (ql:quickload "cl-interpol") 
 (ql:quickload "alexandria") 
-(load "~/Developer/cl-peg/cl-peg.asd")
-(asdf:make "cl-peg")
-(asdf:load-system "cl-peg" :force t)
+(load "~/Developer/cl-peg-yapp/cl-peg-yapp.asd")
+(asdf:make "cl-peg-yapp")
+(asdf:load-system "cl-peg-yapp" :force t)
 (interpol:enable-interpol-syntax)
-(5am:run! 'peg:parser-suite)
+(5am:run! 'peg:peg-suite)
 
 

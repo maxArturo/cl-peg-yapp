@@ -1,10 +1,13 @@
-;; base parser
-;; heavily based on the original paper and
-;; https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
+;;;; structs used for peg tree representation
 
-(in-package #:peg-parser)
+(in-package #:peg-patterns)
 
-(defstruct expression
-  kind
+(defstruct terminal
   value)
+
+(defstruct parent
+  kind
+  children)
+
+(defparameter *empty-terminal* (make-terminal :value :empty-success))
 
