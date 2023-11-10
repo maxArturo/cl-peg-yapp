@@ -6,7 +6,7 @@
 #+5am
 (5am:def-suite* literal-suite :in grammar-suite)
 
-(define-parent-expr upper-case (char-range-terminal #\A #\Z))
+(peg-patterns:define-parent-expr upper-case (peg-patterns:char-range-terminal #\A #\Z))
 (5am:test upper-case-test
   (5am:is 
     (funcall 'upper-case
@@ -15,7 +15,7 @@
     (funcall 'upper-case
              (coerce "jigaro" 'list)))))
 
-(define-parent-expr lower-case (char-range-terminal #\a #\z))
+(peg-patterns:define-parent-expr lower-case (peg-patterns:char-range-terminal #\a #\z))
 (5am:test lower-case-test
   (5am:is 
     (funcall 'lower-case
@@ -25,14 +25,14 @@
              (coerce "Jigaro" 'list)))))
 
 ; represents a single-quoted string, e.g. 'hello'
-(define-parent-expr string-literal
-  (compose
-    (literal-char-terminal #\') 
-    (one-or-more
-      (compose
-        (negative-lookahead (literal-char-terminal #\')) 
-        (char-terminal)))
-    (literal-char-terminal #\')))
+(peg-patterns:define-parent-expr string-literal
+  (peg-patterns:compose
+    (peg-patterns:literal-char-terminal #\') 
+    (peg-patterns:one-or-more
+      (peg-patterns:compose
+        (peg-patterns:negative-lookahead (peg-patterns:literal-char-terminal #\')) 
+        (peg-patterns:char-terminal)))
+    (peg-patterns:literal-char-terminal #\')))
 (5am:test string-literal-test
   (5am:is 
     (funcall 
@@ -45,13 +45,13 @@
 ; parses a literal range of chars, e.g. 'a-z' or 
 ; '0-9'. Ranges must have a dash and must not start
 ; with a dash.
-(define-parent-expr char-range-literal
-  (compose 
-    (negative-lookahead (literal-char-terminal #\-))
-    (char-terminal)
-    (literal-char-terminal #\-)
-    (negative-lookahead (literal-char-terminal #\-))
-    (char-terminal)))
+(peg-patterns:define-parent-expr char-range-literal
+  (peg-patterns:compose 
+    (peg-patterns:negative-lookahead (peg-patterns:literal-char-terminal #\-))
+    (peg-patterns:char-terminal)
+    (peg-patterns:literal-char-terminal #\-)
+    (peg-patterns:negative-lookahead (peg-patterns:literal-char-terminal #\-))
+    (peg-patterns:char-terminal)))
 #+5am
 (5am:test char-range-literal-test
   (5am:is 
@@ -68,7 +68,7 @@
       (coerce "-a--zforeva" 'list))))
   )
 
-(define-parent-expr digit (char-range-terminal #\0 #\9))
+(peg-patterns:define-parent-expr digit (peg-patterns:char-range-terminal #\0 #\9))
 (5am:test digit-test
   (5am:is 
     (funcall 'digit
@@ -78,10 +78,10 @@
              (coerce "oneBacon" 'list)))))
 
 ; parses upper-case hex letters and digits
-(define-parent-expr uphex
-  (or-expr 
-    (char-range-terminal #\A #\Z)
-    (char-range-terminal #\0 #\9)))
+(peg-patterns:define-parent-expr uphex
+  (peg-patterns:or-expr 
+    (peg-patterns:char-range-terminal #\A #\Z)
+    (peg-patterns:char-range-terminal #\0 #\9)))
 #+5am
 (5am:test uphex-test
   (5am:is (funcall 'uphex
@@ -92,13 +92,13 @@
       (coerce "hunky" 'list)))))
 
 ; Unicode <- 'u' ('10' uphex{4} / uphex{4,5})
-(define-parent-expr unicode
-  (compose (literal-char-terminal #\u)
-      (or-expr
-        (compose
-          (string-expr "10")
-          (times 'uphex 4))
-        (or-expr (times 'uphex 5) (times 'uphex 4)))))
+(peg-patterns:define-parent-expr unicode
+  (peg-patterns:compose (peg-patterns:literal-char-terminal #\u)
+      (peg-patterns:or-expr
+        (peg-patterns:compose
+          (peg-patterns:string-expr "10")
+          (peg-patterns:times 'uphex 4))
+        (peg-patterns:or-expr (peg-patterns:times 'uphex 5) (peg-patterns:times 'uphex 4)))))
 #+5am
 (5am:test unicode-test
   (5am:is (funcall 'unicode
@@ -112,16 +112,16 @@
 
 ; Parses against a regex-style set of char options,
 ; including ranges, e.g. [A-Za-z0-9] 
-(define-parent-expr range-expr
-  (compose 
-    (literal-char-terminal #\[)
-    (one-or-more
-      (compose
-        (negative-lookahead (literal-char-terminal #\]))
-        (or-expr 
+(peg-patterns:define-parent-expr range-expr
+  (peg-patterns:compose 
+    (peg-patterns:literal-char-terminal #\[)
+    (peg-patterns:one-or-more
+      (peg-patterns:compose
+        (peg-patterns:negative-lookahead (peg-patterns:literal-char-terminal #\]))
+        (peg-patterns:or-expr 
           'char-range-literal
-          (char-terminal))))
-    (literal-char-terminal #\])))
+          (peg-patterns:char-terminal))))
+    (peg-patterns:literal-char-terminal #\])))
 #+5am
 (5am:test range-expr-test
   (5am:is 
@@ -135,8 +135,8 @@
 
 ; represents literals for unicode, ranges of chars, or quoted
 ; strings 
-(define-parent-expr simple
-  (or-expr
+(peg-patterns:define-parent-expr simple
+  (peg-patterns:or-expr
     'unicode
     'range-expr
     'string-literal))

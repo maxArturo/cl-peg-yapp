@@ -8,12 +8,12 @@
 
 ; Spec       <-- ComEndLine*
 ;                (Definition ComEndLine*)+
-(define-parent-expr spec 
-  (compose 
-    (zero-or-more 'comment-endline)
-    (one-or-more (compose 
+(peg-patterns:define-parent-expr spec 
+  (peg-patterns:compose 
+    (peg-patterns:zero-or-more 'comment-endline)
+    (peg-patterns:one-or-more (peg-patterns:compose 
       'definition 
-     (zero-or-more 'comment-endline)))))
+     (peg-patterns:zero-or-more 'comment-endline)))))
 
 #+5am
 (5am:test spec-test

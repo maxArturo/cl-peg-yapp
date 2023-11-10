@@ -1,6 +1,6 @@
 ;;;; structs used for peg tree representation
 
-(in-package #:peg-grammar)
+(in-package #:peg-patterns)
 
 (defstruct terminal
   value)

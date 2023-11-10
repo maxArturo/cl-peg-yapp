@@ -7,29 +7,29 @@
 (5am:def-suite* sequence-suite :in grammar-suite)
 
 ; Expression <- Sequence (Spacing '/' SP+ Sequence)*
-(define-parent-expr expression
-  (compose
+(peg-patterns:define-parent-expr expression
+  (peg-patterns:compose
     'sequence-expr
-    (zero-or-more (compose 
+    (peg-patterns:zero-or-more (peg-patterns:compose 
       'spacing  
-      (literal-char-terminal #\/)
-      (one-or-more (literal-char-terminal #\SP))
+      (peg-patterns:literal-char-terminal #\/)
+      (peg-patterns:one-or-more (peg-patterns:literal-char-terminal #\SP))
       'sequence-expr))))
 
 ; Sequence <- Rule (Spacing Rule)*
-(define-parent-expr sequence-expr
-  (compose
+(peg-patterns:define-parent-expr sequence-expr
+  (peg-patterns:compose
     'rule
-    (zero-or-more (compose
+    (peg-patterns:zero-or-more (peg-patterns:compose
       'spacing 'rule))))
 
 ; Rule <- PosLook / NegLook / Plain
-(define-parent-expr rule
-  (or-expr 'pos-look 'neg-look 'plain))
+(peg-patterns:define-parent-expr rule
+  (peg-patterns:or-expr 'pos-look 'neg-look 'plain))
 
 ; CheckId <- (upper lower+)+
-(define-parent-expr check-id
-  (compose 'upper-case (one-or-more 'lower-case)))
+(peg-patterns:define-parent-expr check-id
+  (peg-patterns:compose 'upper-case (peg-patterns:one-or-more 'lower-case)))
 #+5am
 (5am:test check-id-test
   (5am:is (funcall 'check-id
@@ -39,8 +39,8 @@
       (coerce "helloWorld" 'list)))))
 
 ; Plain <- Primary Quant?
-(define-parent-expr plain
-  (compose 'primary (optional-expr 'quant)))
+(peg-patterns:define-parent-expr plain
+  (peg-patterns:compose 'primary (peg-patterns:optional-expr 'quant)))
 #+5am
 (5am:test plain-test
   (5am:is (funcall 'plain
@@ -53,30 +53,30 @@
       (coerce "333" 'list)))))
 
 ; PosLook <- '&' Primary Quant?
-(define-parent-expr pos-look
-  (compose (literal-char-terminal #\&) 'plain))
+(peg-patterns:define-parent-expr pos-look
+  (peg-patterns:compose (peg-patterns:literal-char-terminal #\&) 'plain))
 
 ; NegLook <- '!' Primary Quant?
-(define-parent-expr neg-look
-  (compose (literal-char-terminal #\!) 'plain))
+(peg-patterns:define-parent-expr neg-look
+  (peg-patterns:compose (peg-patterns:literal-char-terminal #\!) 'plain))
 
 ; Primary <- Simple / CheckId / '(' Expression ')'
-(define-parent-expr primary
-  (or-expr
+(peg-patterns:define-parent-expr primary
+  (peg-patterns:or-expr
      'simple 'check-id
-      (compose 
-        (literal-char-terminal #\()
+      (peg-patterns:compose 
+        (peg-patterns:literal-char-terminal #\()
         'expression
-        (literal-char-terminal #\)))))
+        (peg-patterns:literal-char-terminal #\)))))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
-(define-parent-expr definition
-  (compose
+(peg-patterns:define-parent-expr definition
+  (peg-patterns:compose
     'check-id
-    (one-or-more (literal-char-terminal #\SP))
-    (or-expr (string-expr "<-") 
-      (literal-char-terminal #\LEFTWARDS_ARROW))
-    (one-or-more (literal-char-terminal #\SP))
+    (peg-patterns:one-or-more (peg-patterns:literal-char-terminal #\SP))
+    (peg-patterns:or-expr (peg-patterns:string-expr "<-") 
+      (peg-patterns:literal-char-terminal #\LEFTWARDS_ARROW))
+    (peg-patterns:one-or-more (peg-patterns:literal-char-terminal #\SP))
    'expression))
 #+5am
 (5am:test scan-def-test

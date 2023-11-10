@@ -3,10 +3,10 @@
 ;;; for PEG expressions. They can be used for implementing
 ;;; a generated parser, including the actual PEG parser. 
 
-(in-package #:peg-grammar)
+(in-package #:peg-patterns)
 
 #+5am
-(5am:def-suite* base-suite :in grammar-suite)
+(5am:def-suite* base-suite :in patterns-suite)
 
 ; this is effectively equivalent to 'unicode'
 ; in a PEG.
@@ -53,10 +53,10 @@
             :remainder (cdr input)))))
 #+5am
 (5am:test char-range-terminal-test
-    (5am:is (funcall (char-range-terminal #\f #\i) 
+    (5am:is (funcall (peg-patterns:char-range-terminal #\f #\i) 
                      (coerce "hunky" 'list)))
     (5am:is (eq NIL 
-      (funcall (char-range-terminal #\f #\i) 
+      (funcall (peg-patterns:char-range-terminal #\f #\i) 
                (coerce "tunky" 'list)))))
 
 (defun positive-lookahead (expr)

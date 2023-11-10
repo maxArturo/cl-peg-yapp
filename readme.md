@@ -1,4 +1,4 @@
-# cl-peg
+# cl-peg-yapp
 
 This is a hand-rolled implementation of a PEG parsing generator from first principles. 
 The main objectives are parser generation: a provided PEG input should result in a 

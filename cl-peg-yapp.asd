@@ -1,5 +1,5 @@
-(asdf:defsystem cl-peg
-  :name "cl-peg"
+(asdf:defsystem cl-peg-yapp
+  :name "cl-peg-yapp"
   :version "0.1"
   :serial t
   :author "Max Alcala <maxarturo@gmail.com>"
@@ -11,15 +11,15 @@
   :pathname "src/"
   :components 
   ((:file "package")
-    (:file "test-suites")
-    (:file "parser")
-    (:module "peg-grammar"
-      :components 
-      ((:file "structs")
-       (:file "base")
-       (:file "comment")
-       (:file "quant")
-       (:file "literal")
-       (:file "sequence")
-       (:file "grammar")))))
+   (:file "test-suites")
+   (:file "parser")
+   (:file "structs") 
+   (:file "patterns")
+   (:module "peg-grammar"
+     :components 
+     ((:file "comment")
+      (:file "quant")
+      (:file "literal")
+      (:file "sequence")
+      (:file "grammar")))))
 
