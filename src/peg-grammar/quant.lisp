@@ -7,13 +7,13 @@
 (5am:def-suite* quant-suite :in grammar-suite)
 
 ; MinMax     <-- '{' Min ',' Max? '}'
-(peg-patterns:define-parent-expr min-max-amount
-  (peg-patterns:compose
-      (peg-patterns:literal-char-terminal #\{)
-      (peg-patterns:one-or-more 'digit)
-      (peg-patterns:literal-char-terminal #\,)
-      (peg-patterns:one-or-more 'digit)
-      (peg-patterns:literal-char-terminal #\})))
+(peg-parser:define-parent-expr min-max-amount
+  (peg-parser:compose
+      (peg-parser:literal-char-terminal #\{)
+      (peg-parser:one-or-more 'digit)
+      (peg-parser:literal-char-terminal #\,)
+      (peg-parser:one-or-more 'digit)
+      (peg-parser:literal-char-terminal #\})))
 #+5am
 (5am:test min-max-amount-test
   (5am:is (funcall 'min-max-amount
@@ -22,11 +22,11 @@
     (coerce "{83,999" 'list)))))
 
 ;Amount      <- '{' Count '}'
-(peg-patterns:define-parent-expr amount
-  (peg-patterns:compose
-    (peg-patterns:literal-char-terminal #\{)
-    (peg-patterns:one-or-more 'digit)
-    (peg-patterns:literal-char-terminal #\})))
+(peg-parser:define-parent-expr amount
+  (peg-parser:compose
+    (peg-parser:literal-char-terminal #\{)
+    (peg-parser:one-or-more 'digit)
+    (peg-parser:literal-char-terminal #\})))
 #+5am
 (5am:test amount-test
   (5am:is (funcall 'amount
@@ -35,7 +35,7 @@
     (coerce "{83,999}" 'list)))))
 
 ; Optional   <-- '?'
-(peg-patterns:define-parent-expr optional (peg-patterns:literal-char-terminal #\?))
+(peg-parser:define-parent-expr optional (peg-parser:literal-char-terminal #\?))
 #+5am
 (5am:test optional-test
   (5am:is (funcall 'optional
@@ -44,7 +44,7 @@
     (coerce "!buthwy" 'list)))))
 
 ; MinZero    <-- '*'
-(peg-patterns:define-parent-expr min-zero (peg-patterns:literal-char-terminal #\*))
+(peg-parser:define-parent-expr min-zero (peg-parser:literal-char-terminal #\*))
 #+5am
 (5am:test min-zero-test
   (5am:is (funcall 'min-zero
@@ -53,7 +53,7 @@
     (coerce "!buthwy" 'list)))))
 
 ; MinOne     <-- '+'
-(peg-patterns:define-parent-expr min-one (peg-patterns:literal-char-terminal #\+))
+(peg-parser:define-parent-expr min-one (peg-parser:literal-char-terminal #\+))
 #+5am
 (5am:test min-one-test
   (5am:is (funcall 'min-one 
@@ -61,8 +61,8 @@
   (5am:is (eq NIL (funcall 'min-one
     (coerce "!buthwy" 'list)))))
 
-(peg-patterns:define-parent-expr quant
-  (peg-patterns:or-expr
+(peg-parser:define-parent-expr quant
+  (peg-parser:or-expr
     'optional  
     'min-zero  
     'min-one   

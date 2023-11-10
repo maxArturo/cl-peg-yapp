@@ -1,5 +1,7 @@
-;(describe 'standard-char)
-;,delete-system-fasls RET system name to remove everything 
+; used to quickly make sure everything is loaded and tested
+; before you start developing
+
+
 (load "~/quicklisp/setup.lisp")
 (ql:quickload "trivia")
 (ql:quickload "fiveam")

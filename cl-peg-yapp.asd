@@ -12,9 +12,11 @@
   :components 
   ((:file "package")
    (:file "test-suites")
-   (:file "parser")
-   (:file "structs") 
-   (:file "patterns")
+   (:file "scanner")
+   (:module "parser"
+    :components 
+    ((:file "structs") 
+     (:file "patterns")))
    (:module "peg-grammar"
      :components 
      ((:file "comment")

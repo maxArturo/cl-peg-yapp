@@ -7,13 +7,13 @@
 (5am:def-suite* comment-suite :in grammar-suite)
 
 ; EndLine <- LF / CRLF / CR
-(peg-patterns:define-parent-expr end-line
-  (peg-patterns:or-expr 
-    (peg-patterns:literal-char-terminal #\cr) 
-    (peg-patterns:literal-char-terminal #\lf) 
-    (peg-patterns:compose
-      (peg-patterns:literal-char-terminal #\cr) 
-      (peg-patterns:literal-char-terminal #\lf))))
+(peg-parser:define-parent-expr end-line
+  (peg-parser:or-expr 
+    (peg-parser:literal-char-terminal #\cr) 
+    (peg-parser:literal-char-terminal #\lf) 
+    (peg-parser:compose
+      (peg-parser:literal-char-terminal #\cr) 
+      (peg-parser:literal-char-terminal #\lf))))
 (5am:test end-line-test
   (5am:is 
     (funcall 'end-line
@@ -22,15 +22,15 @@
     (funcall 'end-line
              (coerce "   jigaro" 'list)))))
 
-(peg-patterns:define-parent-expr comment-line 
-  (peg-patterns:compose 
-    (peg-patterns:zero-or-more 
-      (peg-patterns:literal-char-terminal #\space))
-    (peg-patterns:literal-char-terminal #\#) 
-    (peg-patterns:zero-or-more 
-      (peg-patterns:compose
-        (peg-patterns:negative-lookahead 'end-line)
-        (peg-patterns:char-terminal)))))
+(peg-parser:define-parent-expr comment-line 
+  (peg-parser:compose 
+    (peg-parser:zero-or-more 
+      (peg-parser:literal-char-terminal #\space))
+    (peg-parser:literal-char-terminal #\#) 
+    (peg-parser:zero-or-more 
+      (peg-parser:compose
+        (peg-parser:negative-lookahead 'end-line)
+        (peg-parser:char-terminal)))))
 (5am:test comment-line-test
   (5am:is 
     (funcall 'comment-line
@@ -40,10 +40,10 @@
              (coerce "jigaro" 'list)))))
 
 ; ComEndLine <- SP* ('# ' Comment)? EndLine
-(peg-patterns:define-parent-expr comment-endline
-  (peg-patterns:compose 
-    (peg-patterns:zero-or-more (peg-patterns:literal-char-terminal #\SP)) 
-    (peg-patterns:optional-expr 'comment-line)
+(peg-parser:define-parent-expr comment-endline
+  (peg-parser:compose 
+    (peg-parser:zero-or-more (peg-parser:literal-char-terminal #\SP)) 
+    (peg-parser:optional-expr 'comment-line)
     'end-line))
 (5am:test comment-endline-test
   (5am:is 
@@ -54,10 +54,10 @@
              (coerce "jigaro" 'list)))))
 
 ; Spacing <- ComEndLine? SP+
-(peg-patterns:define-parent-expr spacing
-  (peg-patterns:compose
-    (peg-patterns:optional-expr 'comment-endline)
-    (peg-patterns:one-or-more (peg-patterns:literal-char-terminal #\SP))))
+(peg-parser:define-parent-expr spacing
+  (peg-parser:compose
+    (peg-parser:optional-expr 'comment-endline)
+    (peg-parser:one-or-more (peg-parser:literal-char-terminal #\SP))))
 (5am:test comment-endline-test
   (5am:is 
     (funcall 'spacing

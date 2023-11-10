@@ -6,11 +6,11 @@
 (defpackage #:peg
   (:use #:cl #:trivia)
   (:export #:peg-suite 
-           #:patterns-suite
+           #:parser-suite
            #:grammar-suite
-           #:parser-suite))
+           #:scanner-suite))
 
-(defpackage #:peg-patterns
+(defpackage #:peg-parser
   (:use #:cl #:peg)
   (:export 
     #:terminal
@@ -30,8 +30,8 @@
     #:define-parent-expr))
 
 (defpackage #:peg-grammar
-  (:use #:cl #:peg #:peg-patterns))
+  (:use #:cl #:peg #:peg-parser))
 
-(defpackage #:peg-parser
+(defpackage #:peg-scanner
   (:use #:cl #:peg #:peg-grammar))
 

@@ -4,9 +4,9 @@
  :description "Suite containing all tests")
 
 #+5am
-(5am:def-suite patterns-suite
+(5am:def-suite parser-suite
  :in peg-suite
- :description "Suite for peg expression patterns")
+ :description "Suite for peg expression parsers")
 
 #+5am
 (5am:def-suite grammar-suite
@@ -14,7 +14,7 @@
  :description "Suite for grammar tests")
 
 #+5am
-(5am:def-suite parser-suite
+(5am:def-suite scanner-suite
  :in peg-suite
- :description "Suite for peg parser")
+ :description "Suite for peg scanner")
 

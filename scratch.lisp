@@ -1,5 +1,8 @@
-;(describe 'standard-char)
-;,delete-system-fasls RET system name to remove everything 
+; to pull up docs on the REPL:
+; (describe 'standard-char)
+
+; to remove everything loaded:
+; ,delete-system-fasls RET system name 
 
 (coerce "hey you
 n" 'list)
