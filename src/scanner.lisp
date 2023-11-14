@@ -9,22 +9,20 @@
 
 (defvar *input-buffer*)
 
-(defun load-config (&key (filename "input.peg")) 
+(defun load-config (&key (filename "input.peg"))
   "loads the input grammar file (*.peg)"
   (setf *input-buffer* (uiop:read-file-string filename)))
 
 ;; sample usage
-(load-config :filename "/Users/max/Developer/cl-peg-yapp/test_grammar.peg")
+(load-config :filename "/Users/max/Developer/cl-peg-yapp/grammars/example.peg")
 
 ;; go from lowest to highest precedence
 (defun load-grammar (grammar-str)
   "loads a grammar from a string representation"
-  (let ((lines (uiop:split-string grammar-str :separator 
+  (let ((lines (uiop:split-string grammar-str :separator
                                   '(#\return #\newline))))
-   lines 
-    ))
-(load-grammar *input-buffer*) 
-
+    lines))
+(load-grammar *input-buffer*)
 
 
 ; an expression applies its rules greedily. It will:
@@ -36,6 +34,4 @@
 ; the parsed output is a chain of these expressions.
 
 (defparameter *terminal-expressions*
-  (list :literal :eps :dot :range))
-
-
+              (list :literal :eps :dot :range))

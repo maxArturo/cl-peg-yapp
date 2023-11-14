@@ -9,11 +9,11 @@
 ; MinMax     <-- '{' Min ',' Max? '}'
 (peg-parser:define-parent-expr min-max-amount
   (peg-parser:compose
-      (peg-parser:literal-char-terminal #\{)
+      (peg-parser:char-literal #\{)
       (peg-parser:one-or-more 'digit)
-      (peg-parser:literal-char-terminal #\,)
+      (peg-parser:char-literal #\,)
       (peg-parser:one-or-more 'digit)
-      (peg-parser:literal-char-terminal #\})))
+      (peg-parser:char-literal #\})))
 #+5am
 (5am:test min-max-amount-test
   (5am:is (funcall 'min-max-amount
@@ -24,9 +24,9 @@
 ;Amount      <- '{' Count '}'
 (peg-parser:define-parent-expr amount
   (peg-parser:compose
-    (peg-parser:literal-char-terminal #\{)
+    (peg-parser:char-literal #\{)
     (peg-parser:one-or-more 'digit)
-    (peg-parser:literal-char-terminal #\})))
+    (peg-parser:char-literal #\})))
 #+5am
 (5am:test amount-test
   (5am:is (funcall 'amount
@@ -35,7 +35,7 @@
     (coerce "{83,999}" 'list)))))
 
 ; Optional   <-- '?'
-(peg-parser:define-parent-expr optional (peg-parser:literal-char-terminal #\?))
+(peg-parser:define-parent-expr optional (peg-parser:char-literal #\?))
 #+5am
 (5am:test optional-test
   (5am:is (funcall 'optional
@@ -44,7 +44,7 @@
     (coerce "!buthwy" 'list)))))
 
 ; MinZero    <-- '*'
-(peg-parser:define-parent-expr min-zero (peg-parser:literal-char-terminal #\*))
+(peg-parser:define-parent-expr min-zero (peg-parser:char-literal #\*))
 #+5am
 (5am:test min-zero-test
   (5am:is (funcall 'min-zero
@@ -53,7 +53,7 @@
     (coerce "!buthwy" 'list)))))
 
 ; MinOne     <-- '+'
-(peg-parser:define-parent-expr min-one (peg-parser:literal-char-terminal #\+))
+(peg-parser:define-parent-expr min-one (peg-parser:char-literal #\+))
 #+5am
 (5am:test min-one-test
   (5am:is (funcall 'min-one 

@@ -1,4 +1,5 @@
 tags
 scratch.lisp
 Session.vim
+.vscode/alive/fasl/*.lisp
 

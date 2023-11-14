@@ -9,11 +9,11 @@
 ; EndLine <- LF / CRLF / CR
 (peg-parser:define-parent-expr end-line
   (peg-parser:or-expr 
-    (peg-parser:literal-char-terminal #\cr) 
-    (peg-parser:literal-char-terminal #\lf) 
+    (peg-parser:char-literal #\cr) 
+    (peg-parser:char-literal #\lf) 
     (peg-parser:compose
-      (peg-parser:literal-char-terminal #\cr) 
-      (peg-parser:literal-char-terminal #\lf))))
+      (peg-parser:char-literal #\cr) 
+      (peg-parser:char-literal #\lf))))
 (5am:test end-line-test
   (5am:is 
     (funcall 'end-line
@@ -25,8 +25,8 @@
 (peg-parser:define-parent-expr comment-line 
   (peg-parser:compose 
     (peg-parser:zero-or-more 
-      (peg-parser:literal-char-terminal #\space))
-    (peg-parser:literal-char-terminal #\#) 
+      (peg-parser:char-literal #\space))
+    (peg-parser:char-literal #\#) 
     (peg-parser:zero-or-more 
       (peg-parser:compose
         (peg-parser:negative-lookahead 'end-line)
@@ -42,7 +42,7 @@
 ; ComEndLine <- SP* ('# ' Comment)? EndLine
 (peg-parser:define-parent-expr comment-endline
   (peg-parser:compose 
-    (peg-parser:zero-or-more (peg-parser:literal-char-terminal #\SP)) 
+    (peg-parser:zero-or-more (peg-parser:char-literal #\SP)) 
     (peg-parser:optional-expr 'comment-line)
     'end-line))
 (5am:test comment-endline-test
@@ -57,7 +57,7 @@
 (peg-parser:define-parent-expr spacing
   (peg-parser:compose
     (peg-parser:optional-expr 'comment-endline)
-    (peg-parser:one-or-more (peg-parser:literal-char-terminal #\SP))))
+    (peg-parser:one-or-more (peg-parser:char-literal #\SP))))
 (5am:test comment-endline-test
   (5am:is 
     (funcall 'spacing

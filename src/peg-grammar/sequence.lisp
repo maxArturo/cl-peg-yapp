@@ -12,8 +12,8 @@
     'sequence-expr
     (peg-parser:zero-or-more (peg-parser:compose 
       'spacing  
-      (peg-parser:literal-char-terminal #\/)
-      (peg-parser:one-or-more (peg-parser:literal-char-terminal #\SP))
+      (peg-parser:char-literal #\/)
+      (peg-parser:one-or-more (peg-parser:char-literal #\SP))
       'sequence-expr))))
 
 ; Sequence <- Rule (Spacing Rule)*
@@ -54,29 +54,29 @@
 
 ; PosLook <- '&' Primary Quant?
 (peg-parser:define-parent-expr pos-look
-  (peg-parser:compose (peg-parser:literal-char-terminal #\&) 'plain))
+  (peg-parser:compose (peg-parser:char-literal #\&) 'plain))
 
 ; NegLook <- '!' Primary Quant?
 (peg-parser:define-parent-expr neg-look
-  (peg-parser:compose (peg-parser:literal-char-terminal #\!) 'plain))
+  (peg-parser:compose (peg-parser:char-literal #\!) 'plain))
 
 ; Primary <- Simple / CheckId / '(' Expression ')'
 (peg-parser:define-parent-expr primary
   (peg-parser:or-expr
      'simple 'check-id
       (peg-parser:compose 
-        (peg-parser:literal-char-terminal #\()
+        (peg-parser:char-literal #\()
         'expression
-        (peg-parser:literal-char-terminal #\)))))
+        (peg-parser:char-literal #\)))))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
 (peg-parser:define-parent-expr definition
   (peg-parser:compose
     'check-id
-    (peg-parser:one-or-more (peg-parser:literal-char-terminal #\SP))
+    (peg-parser:one-or-more (peg-parser:char-literal #\SP))
     (peg-parser:or-expr (peg-parser:string-expr "<-") 
-      (peg-parser:literal-char-terminal #\LEFTWARDS_ARROW))
-    (peg-parser:one-or-more (peg-parser:literal-char-terminal #\SP))
+      (peg-parser:char-literal #\LEFTWARDS_ARROW))
+    (peg-parser:one-or-more (peg-parser:char-literal #\SP))
    'expression))
 #+5am
 (5am:test scan-def-test

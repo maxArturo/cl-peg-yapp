@@ -36,7 +36,7 @@ also, successful parsings that do not consume input will be represented
 as a list with a single NIL, and the input intact; eg.:
 
 ncall funcall \#'peg-parser::negative-lookahead (funcall
-'peg-parser::literal-char-terminal \#\i)) coerce "figaro" 'list)) =\>
+'peg-parser::char-literal \#\i)) coerce "figaro" 'list)) =\>
 (:RESULT (NIL) :REMAINDER (#\f \#\i \#\g \#\a \#\r \#\o)
 
 The way we distinguish empty successful matches is with a symbol of
