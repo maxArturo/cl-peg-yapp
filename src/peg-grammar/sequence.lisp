@@ -40,7 +40,7 @@
 
 ; Plain <- Primary Quant?
 (peg-parser:define-parent-expr plain
-  (peg-parser:compose 'primary (peg-parser:optional-expr 'quant)))
+  (peg-parser:compose 'primary (peg-parser:optional 'quant)))
 #+5am
 (5am:test plain-test
   (5am:is (funcall 'plain

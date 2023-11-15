@@ -13,9 +13,9 @@
 (defpackage #:peg-parser
   (:use #:cl #:peg)
   (:export
-   #:terminal
-   #:parent
-   #:char-terminal
+   #:match
+   #:empty-match
+   #:any-char
    #:char-literal
    #:char-range
    #:positive-lookahead
@@ -24,7 +24,7 @@
    #:times
    #:zero-or-more
    #:one-or-more
-   #:optional-expr
+   #:optional
    #:or-expr
    #:string-expr
    #:define-parent-expr))

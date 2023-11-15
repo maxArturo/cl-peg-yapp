@@ -176,14 +176,9 @@
                (curr-results when curr-ans collecting curr-ans))
               (while curr-ans)
               (setf index (match-end curr-ans)))))
-     (progn 
-       ;(print results)
-(or (and results
+     (or (and results
                (new-match input start index results))
-          (empty-match input index))
-            
-            ) 
-      )))
+          (empty-match input index)))))
 #+5am
 (5am:test zero-or-more-test
   (5am:is (equalp (empty-match (coerce "booyah" 'list) 0)
@@ -203,6 +198,7 @@
     (declare (list input) (fixnum index))
     (funcall (compose expr (zero-or-more expr))
       input index)))
+#+5am
 (5am:test one-or-more-test
   (5am:is (eq NIL
               (funcall
@@ -214,34 +210,34 @@
                 (char-literal #\f))
             (coerce "figaro" 'list) 0)))
 
-(defun optional-expr (expr)
+(defun optional (expr)
   "applies expr zero or one times. Equivalent to the
    star (*) modifier in PEG notation."
-  (lambda (input)
-    (let ((result (funcall expr input)))
-      (or result (list :result (list *empty-terminal*) :remainder input)))))
+  (lambda (input index)
+    (declare (list input) (fixnum index))
+    (let ((result (funcall expr input index)))
+      (or result (empty-match input index)))))
+#+5am
 (5am:test optional-test
-  (5am:is (equalp *empty-terminal*
-                  (first (getf
-                           (funcall (optional-expr (char-literal #\f))
-                             (coerce "jigaro" 'list))
-                           :result))))
-  (5am:is (equalp (make-terminal :value #\f)
-                  (first (getf
-                           (funcall (optional-expr (char-literal #\f))
-                             (coerce "figaro" 'list))
-                           :result)))))
+  (5am:is (equalp (empty-match (coerce "jigaro" 'list) 0)
+    (funcall (optional (char-literal #\f))
+                             (coerce "jigaro" 'list) 0)))
+  (5am:is (equalp (new-match (coerce "figaro" 'list) 0 1)
+    (funcall (optional (char-literal #\f))
+                             (coerce "figaro" 'list) 0))))
 
 (defun or-expr (&rest exprs)
   "attempts exprs, until one succeeds.
    Returns NIL otherwise. Equivalent to the OR
    (/) operator in PEG notation."
-  (lambda (input)
+  (lambda (input index)
+    (declare (list input) (fixnum index))
     (for:for
       ((expr over exprs)
-       (curr-ans = (funcall expr input)))
+       (curr-ans = (funcall expr input index)))
       (until curr-ans)
       (returning curr-ans))))
+#+5am
 (5am:test or-expr-test
   (5am:is
     (funcall
@@ -250,45 +246,39 @@
           (char-literal #\i)
           (char-literal #\g)
           (char-literal #\a))
-      (coerce "arigar" 'list)))
+      (coerce "arigar" 'list) 0))
   (5am:is (eq NIL
               (funcall
                   (or-expr
                     (char-literal #\i)
                     (char-literal #\g)
                     (char-literal #\a))
-                (coerce "rigar" 'list)))))
+                (coerce "rigar" 'list) 0))))
 
 (defun string-expr (input)
   "parses a provided string"
   (declare (string input))
   (let ((check (coerce input 'list)))
     (apply #'compose
-        (mapcar (lambda (el) (char-literal el))
-            check))))
+      (mapcar (lambda (el) (char-literal el))
+        check))))
 #+5am
 (5am:test string-expr-test
   (5am:is (funcall (string-expr "hello")
-            (coerce "hello world" 'list)))
+            (coerce "hello world" 'list) 0))
   (5am:is (eq NIL (funcall (string-expr "hello")
-                    (coerce "hella" 'list)))))
+                    (coerce "hella" 'list) 0))))
 
 (defmacro define-parent-expr (parent-kind expr-lambda)
   "defines the main lambda thunk for applying an 
-   expression. If successful, returns a parent 
-   struct. Returns nil if not valid"
-  `(defun ,parent-kind (input)
-     (destructuring-bind
-         (&key result remainder)
-         (funcall ,expr-lambda
-           input)
-       (and
+   expression. If successful, returns a match.
+   Returns nil if not valid"
+  `(defun ,parent-kind (input index)
+     (declare (list input) (fixnum index))
+     (let ((result (funcall ,expr-lambda
+           input index)))
+      (and
         result
-        (list :result
-              (list (make-parent
-                      :kind ,(intern (symbol-name parent-kind) "KEYWORD")
-                      :children result
-                      :match ; todo make match here
-                      ))
-              :remainder
-              remainder)))))
+        (new-match input index (match-end result) result 
+          ,(intern (symbol-name parent-kind) "KEYWORD"))))))
+
