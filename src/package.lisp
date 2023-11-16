@@ -5,33 +5,32 @@
 
 (defpackage #:peg
   (:use #:cl #:trivia)
-  (:export #:peg-suite 
-           #:patterns-suite
+  (:export #:peg-suite
+           #:parser-suite
            #:grammar-suite
-           #:parser-suite))
-
-(defpackage #:peg-patterns
-  (:use #:cl #:peg)
-  (:export 
-    #:terminal
-    #:parent
-    #:char-terminal
-    #:literal-char-terminal
-    #:char-range-terminal
-    #:positive-lookahead
-    #:negative-lookahead 
-    #:compose 
-    #:times 
-    #:zero-or-more 
-    #:one-or-more 
-    #:optional-expr 
-    #:or-expr 
-    #:string-expr 
-    #:define-parent-expr))
-
-(defpackage #:peg-grammar
-  (:use #:cl #:peg #:peg-patterns))
+           #:scanner-suite))
 
 (defpackage #:peg-parser
-  (:use #:cl #:peg #:peg-grammar))
+  (:use #:cl #:peg)
+  (:export
+   #:match
+   #:empty-match
+   #:any-char
+   #:char-literal
+   #:char-range
+   #:positive-lookahead
+   #:negative-lookahead
+   #:compose
+   #:times
+   #:zero-or-more
+   #:one-or-more
+   #:opt-expr
+   #:or-expr
+   #:string-expr
+   #:def-exp))
 
+(defpackage #:peg-grammar
+  (:use #:cl #:peg #:peg-parser))
+
+(defpackage #:peg-scanner
+  (:use #:cl #:peg #:peg-grammar))

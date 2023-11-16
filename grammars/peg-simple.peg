@@ -1,10 +1,6 @@
-# PEGN (v1.0.0-alpha) spec.pegn.dev
-# Copyright 2020 Robert S Muhlestein (rwx@robs.io)
-# Licensed under Mozilla Public License 2.0
-# Uses spec.pegn.dev/classes
-# Uses spec.pegn.dev/tokens
-
-# NOTE: assumes scanning by at least one byte at a time
+# PEG simplified
+# This is the flavor of PEG that `cl-peg-yapp` works with. 
+# It's simplified from the more hardcore PEGN for my use cases.
 
 Spec       <-- Meta? Copyright? Licensed? Uses*
                ComEndLine*
