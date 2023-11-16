@@ -24,10 +24,10 @@
    #:times
    #:zero-or-more
    #:one-or-more
-   #:optional
+   #:opt-expr
    #:or-expr
    #:string-expr
-   #:define-parent-expr))
+   #:def-exp))
 
 (defpackage #:peg-grammar
   (:use #:cl #:peg #:peg-parser))

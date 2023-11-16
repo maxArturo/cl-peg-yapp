@@ -12,6 +12,5 @@
 (asdf:make "cl-peg-yapp")
 (asdf:load-system "cl-peg-yapp" :force t)
 (interpol:enable-interpol-syntax)
+(5am:run! 'peg:peg-suite)
 
-
-;  (5am:run! 'peg:peg-suite)
