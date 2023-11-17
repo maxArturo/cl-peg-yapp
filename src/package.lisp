@@ -3,14 +3,14 @@
 ;; needed to enable interpol syntax
 (interpol:enable-interpol-syntax)
 
-(defpackage #:peg
+(uiop:define-package #:peg
   (:use #:cl #:trivia)
   (:export #:peg-suite
            #:parser-suite
            #:grammar-suite
-           #:scanner-suite))
+           #:scanner-suite)) 
 
-(defpackage #:peg-parser
+(uiop:define-package #:peg-parser
   (:use #:cl #:peg)
   (:export
    #:match
@@ -27,10 +27,10 @@
    #:opt-expr
    #:or-expr
    #:string-expr
-   #:def-exp))
+   #:defexpr))
 
-(defpackage #:peg-grammar
+(uiop:define-package #:peg-grammar
   (:use #:cl #:peg #:peg-parser))
 
-(defpackage #:peg-scanner
+(uiop:define-package #:peg-scanner
   (:use #:cl #:peg #:peg-grammar))

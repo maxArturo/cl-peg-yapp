@@ -97,3 +97,14 @@
 (funcall (comment-line) (coerce "jigaro" 'list))
 (funcall (comment-line) (coerce "   ### jigaro" 'list))
 (funcall (comment-line) (list #\CR))
+
+
+(in-package #:peg-grammar)
+(funcall 
+  (zero-or-more #'comment-endline)
+  (coerce
+"# this is a test spec
+# it's weird
+# but it's valid
+Word <- Letter+ # with comments too! 
+Letter <- [A-Za-z] " 'list) 0)

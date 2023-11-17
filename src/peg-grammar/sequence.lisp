@@ -7,7 +7,7 @@
 (5am:def-suite* sequence-suite :in grammar-suite)
 
 ; Expression <- Sequence (Spacing '/' SP+ Sequence)*
-(def-exp expression
+(defexpr expression
          (compose
           #'sequence-expr
           (zero-or-more (compose
@@ -17,18 +17,18 @@
                          #'sequence-expr))))
 
 ; Sequence <- Rule (Spacing Rule)*
-(def-exp sequence-expr
+(defexpr sequence-expr
          (compose
           #'rule
           (zero-or-more (compose
                          #'spacing #'rule))))
 
 ; Rule <- PosLook / NegLook / Plain
-(def-exp rule
+(defexpr rule
          (or-expr #'pos-look #'neg-look #'plain))
 
 ; CheckId <- (upper lower+)+
-(def-exp check-id
+(defexpr check-id
          (compose #'upper-case (one-or-more #'lower-case)))
 #+5am
 (5am:test check-id-test
@@ -39,7 +39,7 @@
                         (coerce "helloWorld" 'list) 0))))
 
 ; Plain <- Primary Quant?
-(def-exp plain (compose #'primary (opt-expr #'quant)))
+(defexpr plain (compose #'primary (opt-expr #'quant)))
 #+5am
 (5am:test plain-test
           (5am:is (funcall #'plain
@@ -52,15 +52,15 @@
                         (coerce "333" 'list) 0))))
 
 ; PosLook <- '&' Primary Quant?
-(def-exp pos-look
+(defexpr pos-look
          (compose (char-literal #\&) #'plain))
 
 ; NegLook <- '!' Primary Quant?
-(def-exp neg-look
+(defexpr neg-look
          (compose (char-literal #\!) #'plain))
 
 ; Primary <- Simple / CheckId / '(' Expression ')'
-(def-exp primary
+(defexpr primary
          (or-expr
           #'simple #'check-id
           (compose
@@ -69,7 +69,7 @@
            (char-literal #\)))))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
-(def-exp definition
+(defexpr definition
          (compose
           #'check-id
           (one-or-more (char-literal #\SP))

@@ -7,7 +7,7 @@
 (5am:def-suite* quant-suite :in grammar-suite)
 
 ; MinMax     <-- '{' Min ',' Max? '}'
-(def-exp min-max-amount
+(defexpr min-max-amount
          (compose
           (char-literal #\{)
           (one-or-more 'digit)
@@ -22,7 +22,7 @@
                             (coerce "{83,999" 'list) 0))))
 
 ;Amount      <- '{' Count '}'
-(def-exp amount
+(defexpr amount
          (compose
           (char-literal #\{)
           (one-or-more 'digit)
@@ -35,7 +35,7 @@
                             (coerce "{83,999}" 'list) 0))))
 
 ; Optional   <-- '?'
-(def-exp optional (char-literal #\?))
+(defexpr optional (char-literal #\?))
 #+5am
 (5am:test optional-test
           (5am:is (funcall #'optional
@@ -44,7 +44,7 @@
                             (coerce "!buthwy" 'list) 0))))
 
 ; MinZero    <-- '*'
-(def-exp min-zero (char-literal #\*))
+(defexpr min-zero (char-literal #\*))
 #+5am
 (5am:test min-zero-test
           (5am:is (funcall #'min-zero
@@ -53,7 +53,7 @@
                             (coerce "!buthwy" 'list) 0))))
 
 ; MinOne     <-- '+'
-(def-exp min-one (char-literal #\+))
+(defexpr min-one (char-literal #\+))
 #+5am
 (5am:test min-one-test
           (5am:is (funcall #'min-one
@@ -61,7 +61,7 @@
           (5am:is (eq NIL (funcall #'min-one
                             (coerce "!buthwy" 'list) 0))))
 
-(def-exp quant
+(defexpr quant
          (or-expr
           #'optional
           #'min-zero

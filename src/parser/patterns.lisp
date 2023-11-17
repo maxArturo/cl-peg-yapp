@@ -9,6 +9,46 @@
 #+5am
 (5am:def-suite* base-suite :in parser-suite)
 
+(defmacro defexpr (parent-kind expr-lambda)
+  "defines the main lambda thunk for applying an 
+   expression. If successful, returns a match.
+   Returns nil if not valid"
+  `(defun ,parent-kind (input index)
+     (declare (list input) (fixnum index))
+     (let ((result (funcall ,expr-lambda
+                     input index)))
+       (and
+        result
+        (new-match input index (match-end result) result
+                   ,(intern (symbol-name parent-kind) "KEYWORD"))))))
+
+(defun compact-match (match-expr)
+  "creates a compacted match with trimmed out
+   terminal or nil children matches."
+  (let ((compacted (copy-match match-expr)))
+    (setf (match-children compacted) 
+          (remove-if (lambda (el) (not (match-kind el)))
+                     (match-children compacted)))
+    compacted))
+#+5am
+(5am:test compact-match-test
+  (5am:is
+   (equalp (new-match nil 0 0)
+           (compact-match (new-match nil 0 0 
+             (list (new-match nil 0 0) 
+                   (new-match nil 0 0) 
+                   (new-match nil 0 0) 
+                   (new-match nil 0 0))))))
+  (5am:is
+   (equalp (new-match nil 0 0 
+                      (list (new-match nil 0 0 nil :testy)))
+           (compact-match (new-match nil 0 0 
+             (list (new-match nil 0 0) 
+                   (new-match nil 0 0) 
+                   (new-match nil 0 0 nil :testy)  
+                   (new-match nil 0 0) 
+                   (new-match nil 0 0)))))))
+
 ; this is effectively equivalent to 'unicode'
 ; in a PEG.
 (defun any-char (input i)
@@ -76,32 +116,30 @@
                         (coerce "tunky" 'list) 0))))
 
 (defun positive-lookahead (expr)
-  "implements positive lookahead for a PEG expr.
-   Function returns NIL if expression fails.
-   Otherwise returns a tuple-list with
-   intact input."
+  "implements positive lookahead for a PEG 
+   expr (&). Function returns NIL if expression 
+   fails, otherwise returns an empty match."
   (lambda (input i)
     (declare (list input) (fixnum i))
     (let ((ans (funcall expr input i)))
       (and ans (empty-match input i)))))
 
 (defun negative-lookahead (expr)
-  "implements negative-lookahead for a PEG expr.
-   Function returns NIL if expression succeeds.
-   Otherwise returns a tuple-list with
-   NIL and intact input."
+  "implements negative-lookahead for a PEG expr
+   (i.e. `!`). Function returns NIL if expression 
+   succeeds, otherwise returns an empty match."
   (lambda (input i)
     (declare (list input) (fixnum i))
     (let ((ans (funcall expr input i)))
       (and (not ans) (empty-match input i)))))
 #+5am
 (5am:test negative-lookahead-test
-  (5am:is
-   (funcall (negative-lookahead (char-literal #\i))
-     (coerce "figaro" 'list) 3))
-  (5am:is
-   (eq nil (funcall (negative-lookahead (char-literal #\i))
-     (coerce "figaro" 'list) 1))))
+          (5am:is
+           (funcall (negative-lookahead (char-literal #\i))
+             (coerce "figaro" 'list) 3))
+          (5am:is
+           (eq nil (funcall (negative-lookahead (char-literal #\i))
+                     (coerce "figaro" 'list) 1))))
 
 (defun compose (&rest exprs)
   "It applies the output of each expr to the
@@ -171,7 +209,7 @@
   (lambda (input index)
     (declare (list input) (fixnum index))
     (let ((start index)
-          (results (for:for
+          (resuls (for:for
                     ((curr-ans = (funcall expr input index))
                      (curr-results when curr-ans collecting curr-ans))
                     (while curr-ans)
@@ -211,20 +249,20 @@
                     (coerce "figaro" 'list) 0)))
 
 (defun opt-expr (expr)
-  "applies expr zero or one times. Equivalent to the
-   star (*) modifier in PEG notation."
+  "either parses with `expr` or returns an empty match.
+   Equivalent to the (?) modifier in PEG notation."
   (lambda (input index)
     (declare (list input) (fixnum index))
     (let ((result (funcall expr input index)))
       (or result (empty-match input index)))))
 #+5am
 (5am:test opt-expr-test
-          (5am:is (equalp (empty-match (coerce "jigaro" 'list) 0)
-                          (funcall (opt-expr (char-literal #\f))
-                            (coerce "jigaro" 'list) 0)))
-          (5am:is (equalp (new-match (coerce "figaro" 'list) 0 1)
-                          (funcall (opt-expr (char-literal #\f))
-                            (coerce "figaro" 'list) 0))))
+    (5am:is (equalp (empty-match (coerce "jigaro" 'list) 0)
+                    (funcall (opt-expr (char-literal #\f))
+                      (coerce "jigaro" 'list) 0)))
+    (5am:is (equalp (new-match (coerce "figaro" 'list) 0 1) 
+                    (funcall (opt-expr (char-literal #\f))
+                      (coerce "figaro" 'list) 0))))
 
 (defun or-expr (&rest exprs)
   "attempts exprs, until one succeeds.
@@ -269,15 +307,3 @@
           (5am:is (eq NIL (funcall (string-expr "hello")
                             (coerce "hella" 'list) 0))))
 
-(defmacro def-exp (parent-kind expr-lambda)
-  "defines the main lambda thunk for applying an 
-   expression. If successful, returns a match.
-   Returns nil if not valid"
-  `(defun ,parent-kind (input index)
-     (declare (list input) (fixnum index))
-     (let ((result (funcall ,expr-lambda
-                     input index)))
-       (and
-        result
-        (new-match input index (match-end result) result
-                   ,(intern (symbol-name parent-kind) "KEYWORD"))))))

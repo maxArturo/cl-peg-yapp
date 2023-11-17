@@ -15,7 +15,8 @@
    (:file "scanner")
    (:module "parser"
             :components
-            ((:file "entities")
+            ((:file "tree")
+             (:file "entities")
              (:file "patterns")))
    (:module "peg-grammar"
             :components
