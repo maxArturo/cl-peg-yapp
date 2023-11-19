@@ -148,16 +148,18 @@
    expressions."
   (lambda (input i)
     (declare (list input) (fixnum i))
-    (let
+    (let*
         ((start i)
          (res (multiple-value-list (for:for
                                     ((expr over exprs)
                                      (curr-ans = (funcall expr input i))
                                      (curr-results collecting curr-ans))
                                     (always curr-ans)
-                                    (setf i (match-end curr-ans))))))
-      (and (first res)
-           (new-match input start i (second res))))))
+                                    (setf i (match-end curr-ans)))))
+         (successful (first res))
+         (children (second res)))
+      (and successful
+           (new-match input start i children)))))
 #+5am
 (5am:test compose-test
           (5am:is
@@ -209,7 +211,7 @@
   (lambda (input index)
     (declare (list input) (fixnum index))
     (let ((start index)
-          (resuls (for:for
+          (results (for:for
                     ((curr-ans = (funcall expr input index))
                      (curr-results when curr-ans collecting curr-ans))
                     (while curr-ans)
@@ -270,11 +272,12 @@
    (/) operator in PEG notation."
   (lambda (input index)
     (declare (list input) (fixnum index))
-    (for:for
-     ((expr over exprs)
-      (curr-ans = (funcall expr input index)))
-     (until curr-ans)
-     (returning curr-ans))))
+    (let ((res (for:for
+       ((expr over exprs)
+        (curr-ans = (funcall expr input index)))
+       (until curr-ans)
+       (returning curr-ans))))
+      res)))
 #+5am
 (5am:test or-expr-test
           (5am:is
@@ -284,6 +287,14 @@
                 (char-literal #\i)
                 (char-literal #\g)
                 (char-literal #\a))
+             (coerce "arigar" 'list) 0))
+        (5am:is
+           (funcall
+               (or-expr
+                (char-literal #\f)
+                (char-literal #\i)
+                (one-or-more #'any-char)
+                (char-literal #\g))
              (coerce "arigar" 'list) 0))
           (5am:is (eq NIL
                       (funcall

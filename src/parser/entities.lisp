@@ -12,7 +12,7 @@
   (str nil :type list)
   (start 0 :type fixnum)
   (end 0 :type fixnum)
-  children
+  (children)
   (kind))
 
 (defun empty-match (input i)
