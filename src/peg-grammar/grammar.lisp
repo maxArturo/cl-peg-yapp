@@ -18,8 +18,9 @@
     (zero-or-more #'comment-endline)))))
 #+5am
 (5am:test spec-test
-          (5am:is (funcall #'spec (coerce
-                                    "# this is a test spec
+  (5am:is 
+    (funcall #'spec (coerce
+"# this is a test spec
 # it's weird
 # but it's valid
 Word <- Letter+ # with comments too! 

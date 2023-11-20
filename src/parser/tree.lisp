@@ -4,5 +4,7 @@
 (in-package #:peg-parser)
 
 #+5am
-(5am:def-suite* base-suite :in parser-suite)
+(5am:def-suite* tree-suite :in parser-suite)
+
+(defparameter *compacted-tree* nil)
 

@@ -42,12 +42,11 @@
                         (coerce "jigaro" 'list) 0))))
 
 ; ComEndLine <- SP* ('# ' Comment)? EndLine
-(defexpr
- comment-endline
- (compose
-  (zero-or-more (char-literal #\SP))
-  (opt-expr #'comment-line)
-  #'end-line))
+(defexpr comment-endline
+         (compose
+           (zero-or-more (char-literal #\SP))
+           (opt-expr #'comment-line)
+           #'end-line))
 #+5am
 (5am:test comment-endline-test
           (5am:is
@@ -60,16 +59,16 @@
 ; Spacing <- ComEndLine? SP+
 (defexpr spacing
          (compose
-          (opt-expr #'comment-endline)
-          (one-or-more (char-literal #\SP))))
+           (opt-expr #'comment-endline)
+           (one-or-more (char-literal #\SP))))
 #+5am
-(5am:test comment-endline-test
-          (5am:is
-           (funcall #'spacing
-             (list #\SP #\SP) 0))
-          (5am:is
-           (funcall #'spacing
-             (list #\# #\Newline #\SP #\SP) 0))
-          (5am:is (eq NIL
-                      (funcall #'spacing
-                        (list #\# #\SP #\SP) 0))))
+(5am:test spacing-test
+  (5am:is
+   (funcall #'spacing
+            (list #\SP #\SP) 0))
+  (5am:is
+   (funcall #'spacing
+            (list #\# #\Newline #\SP #\SP) 0))
+  (5am:is (eq NIL
+              (funcall #'spacing
+                       (list #\# #\SP #\SP) 0))))
