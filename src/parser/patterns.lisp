@@ -18,8 +18,7 @@
      (let* ((result (funcall ,expr-lambda input index))
             (result-match 
               (and result
-                   (new-match input index (match-end result) 
-                              (or (and (listp result) result) (list result))
+                   (new-match input index (match-end result) result
                               ,(intern (symbol-name parent-kind) "KEYWORD")))))
        (compact-match result-match))))
 
@@ -134,7 +133,9 @@
        (successful (first res))
        (children (second res)))
       (and successful
-           (new-match input start i children)))))
+           (new-match input start i 
+                      (or (and (listp children) children) 
+                          (list children)))))))
 #+5am
 (5am:test compose-test
   (5am:is
@@ -215,7 +216,7 @@
     (let ((res (funcall (compose expr (zero-or-more expr))
              input index)))
       (and res
-           (new-match input index (match-end res) (list res))))))
+           (new-match input index (match-end res) res)))))
 #+5am
 (5am:test one-or-more-test
   (5am:is (eq NIL
@@ -242,14 +243,16 @@
     (let ((result (funcall expr input index)))
       (or 
         (and result 
-             (new-match input index (match-end result) (list result)))
+             (new-match input index (match-end result) result))
         (empty-match input index)))))
 #+5am
 (5am:test opt-expr-test
   (5am:is (equalp (empty-match (coerce "jigaro" 'list) 0)
                   (funcall (opt-expr (char-literal #\f))
                            (coerce "jigaro" 'list) 0)))
-  (5am:is (equalp (new-match (coerce "figaro" 'list) 0 1) 
+  (5am:is (equalp (new-match 
+                    (coerce "figaro" 'list) 0 1 
+                    (list (new-match (coerce "figaro" 'list) 0 1))) 
                   (funcall (opt-expr (char-literal #\f))
                            (coerce "figaro" 'list) 0))))
 
@@ -265,7 +268,7 @@
                  (until curr-ans)
                  (returning curr-ans))))
       (and res
-           (new-match input index (match-end res) (list res))))))
+           (new-match input index (match-end res) res)))))
 #+5am
 (5am:test or-expr-test
   (5am:is

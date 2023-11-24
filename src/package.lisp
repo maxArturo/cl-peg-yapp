@@ -4,7 +4,7 @@
 (interpol:enable-interpol-syntax)
 
 (uiop:define-package #:peg
-  (:use #:cl #:trivia)
+  (:use #:cl)
   (:export #:peg-suite
            #:parser-suite
            #:grammar-suite
@@ -12,6 +12,9 @@
 
 (uiop:define-package #:peg-parser
   (:use #:cl #:peg)
+  (:import-from #:alexandria
+   #:ensure-list
+   #:flatten)
   (:export
    #:match
    #:empty-match

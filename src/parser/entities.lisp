@@ -24,7 +24,7 @@
            (fixnum end))
   (compact-match 
     (make-match :str input :start start :end end
-                :children children
+                :children (ensure-list children)
                 :kind kind)))
 
 (defun compact-match (match-expr)
@@ -36,16 +36,16 @@
         (let* ((compacted (copy-match match-expr))
                (compacted-res 
                  (for:for 
-                   ((child over (match-children compacted))
-                    (valid-child = (and (match-kind child) child))
-                    (valid-children = (remove-if (lambda (el) (not (match-kind el))) (match-children child)))
-                    (candidate = (or valid-child valid-children))
-                    (candidates when candidate collecting candidate)))))
-          ; TODO wrap up pulling in child matches with non-nil kinds
-          (print "ayoo")
-          (print compacted-res)
+                   ((child in (match-children compacted))
+                    (selected-children = (or (and 
+                                        (not (match-kind child))
+                                        (match-children child))
+                                      child))
+                    ; if child has no kind, slurp the children
+                    (all-children collecting selected-children)))))
           (setf (match-children compacted) 
-                compated-res) compacted)
+                (first (flatten compacted-res)))
+          compacted) 
         match-expr)))
 #+5am
 (5am:test compact-match-test
