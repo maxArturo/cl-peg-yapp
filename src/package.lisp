@@ -30,7 +30,9 @@
    #:opt-expr
    #:or-expr
    #:string-expr
-   #:defexpr))
+   #:defexpr
+   #:defpattern
+   ))
 
 (uiop:define-package #:peg-grammar
   (:use #:cl #:peg #:peg-parser))

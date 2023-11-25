@@ -7,4 +7,6 @@
 (5am:def-suite* tree-suite :in parser-suite)
 
 (defparameter *compacted-tree* nil)
+#+nil
+(defparameter *compacted-tree* t)
 

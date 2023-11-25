@@ -6,7 +6,7 @@
 #+5am
 (5am:def-suite* literal-suite :in grammar-suite)
 
-(defexpr upper-case (char-range #\A #\Z))
+(defpattern upper-case (char-range #\A #\Z))
 #+5am
 (5am:test upper-case-test
           (5am:is
@@ -16,7 +16,7 @@
                       (funcall 'upper-case
                         (coerce "jigaro" 'list) 0))))
 
-(defexpr lower-case (char-range #\a #\z))
+(defpattern lower-case (char-range #\a #\z))
 #+5am
 (5am:test lower-case-test
           (5am:is
@@ -27,7 +27,7 @@
                         (coerce "Jigaro" 'list) 0))))
 
 ; represents a single-quoted string, e.g. 'hello'
-(defexpr string-literal
+(defpattern string-literal
          (compose
           (char-literal #\')
           (one-or-more
@@ -48,7 +48,7 @@
 ; parses a literal range of chars, e.g. 'a-z' or 
 ; '0-9'. Ranges must have a dash and must not start
 ; with a dash.
-(defexpr char-range-literal
+(defpattern char-range-literal
          (compose
           (negative-lookahead (char-literal #\-))
           #'any-char
@@ -70,7 +70,7 @@
                           'char-range-literal
                         (coerce "-a--zforeva" 'list) 0))))
 
-(defexpr digit (char-range #\0 #\9))
+(defpattern digit (char-range #\0 #\9))
 #+5am
 (5am:test digit-test
           (5am:is
@@ -81,7 +81,7 @@
                         (coerce "oneBacon" 'list) 0))))
 
 ; parses upper-case hex letters and digits
-(defexpr uphex
+(defpattern uphex
          (or-expr
           (char-range #\A #\Z)
           (char-range #\0 #\9)))
@@ -95,7 +95,7 @@
                             (coerce "hunky" 'list) 0))))
 
 ; Unicode <- 'u' ('10' uphex{4} / uphex{4,5})
-(defexpr unicode
+(defpattern unicode
          (compose (char-literal #\u)
                   (or-expr
                    (compose
@@ -115,7 +115,7 @@
 
 ; Parses against a regex-style set of char options,
 ; including ranges, e.g. [A-Za-z0-9] 
-(defexpr range-expr
+(defpattern range-expr
          (compose
           (char-literal #\[)
           (one-or-more
@@ -138,7 +138,7 @@
 
 ; represents literals for unicode, ranges of chars, or quoted
 ; strings 
-(defexpr simple
+(defpattern simple
          (or-expr
           'unicode
           'range-expr

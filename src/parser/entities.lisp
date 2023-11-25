@@ -7,6 +7,9 @@
 
 (in-package #:peg-parser)
 
+#+5am
+(5am:def-suite* entities-suite :in parser-suite)
+
 (defstruct match
   (str nil :type list)
   (start 0 :type fixnum)
@@ -30,41 +33,41 @@
 (defun compact-match (match-expr)
   "creates a compacted match with trimmed out
    terminal or nil children matches."
-  (and 
-    match-expr
-    (if *compacted-tree* 
-        (let* ((compacted (copy-match match-expr))
-               (compacted-res 
-                 (for:for 
-                   ((child in (match-children compacted))
-                    (selected-children = (or (and 
-                                        (not (match-kind child))
-                                        (match-children child))
-                                      child))
-                    ; if child has no kind, slurp the children
-                    (all-children collecting selected-children)))))
-          (setf (match-children compacted) 
-                (first (flatten compacted-res)))
-          compacted) 
-        match-expr)))
+  (and match-expr
+       (or (unless *compacted-tree* match-expr)
+           (progn 
+             (setf 
+               (match-children match-expr) 
+               (flatten
+                 (mapcar 
+                   (lambda (el)
+                     (if (match-kind el)
+                         el 
+                         (match-children el))) 
+                   (match-children match-expr))))
+             match-expr))))
 #+5am
 (5am:test compact-match-test
-  (5am:is
-   (equalp (new-match nil 0 0)
-           (compact-match 
-             (new-match 
-               nil 0 0 
-               (list (new-match nil 0 0) 
-                     (new-match nil 0 0) 
-                     (new-match nil 0 0) 
-                     (new-match nil 0 0))))))
-  (5am:is
-   (equalp (new-match nil 0 0 
-                      (list (new-match nil 0 0 nil :testy)))
-           (compact-match (new-match nil 0 0 
-                                     (list (new-match nil 0 0) 
-                                           (new-match nil 0 0) 
-                                           (new-match nil 0 0 nil :testy)  
-                                           (new-match nil 0 0) 
-                                           (new-match nil 0 0)))))))
+  (let ((*compacted-tree* t))
+    (5am:is
+     (equalp (new-match nil 0 0)
+             (compact-match
+               (new-match 
+                 nil 0 0 
+                 (list (new-match nil 0 0) 
+                       (new-match nil 0 0) 
+                       (new-match nil 0 0) 
+                       (new-match nil 0 0))))))
+
+    (5am:is
+     (equalp (new-match nil 0 0 
+                        (list (new-match nil 0 0 nil :testy)))
+             (compact-match 
+               (new-match 
+                 nil 0 0 
+                 (list (new-match nil 0 0) 
+                       (new-match nil 0 0) 
+                       (new-match nil 0 0 nil :testy)  
+                       (new-match nil 0 0) 
+                       (new-match nil 0 0))))))))
 

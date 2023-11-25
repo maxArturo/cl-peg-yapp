@@ -9,18 +9,24 @@
 #+5am
 (5am:def-suite* base-suite :in parser-suite)
 
-(defmacro defexpr (parent-kind expr-lambda)
-  "defines the main lambda thunk for applying an 
-   expression. If successful, returns a match.
-   Returns nil if not valid"
-  `(defun ,parent-kind (input index)
+(defmacro defpattern (pattern-kind expr-lambda &optional exp-p)
+  "defines an expression pattern, optionally
+   interpreted as a meaningful expression node."
+  `(defun ,pattern-kind (input index)
      (declare (list input) (fixnum index))
      (let* ((result (funcall ,expr-lambda input index))
             (result-match 
               (and result
-                   (new-match input index (match-end result) result
-                              ,(intern (symbol-name parent-kind) "KEYWORD")))))
+                   (new-match 
+                     input index (match-end result) result
+                     ,(and exp-p (intern (symbol-name pattern-kind) "KEYWORD"))))))
        (compact-match result-match))))
+
+(defmacro defexpr (parent-kind expr-lambda)
+  "defines the main lambda thunk for applying an 
+   expression. If successful, returns a match.
+   Returns nil if not valid"
+  `(defpattern ,parent-kind ,expr-lambda t))
 
 ; this is effectively equivalent to 'unicode'
 ; in a PEG.

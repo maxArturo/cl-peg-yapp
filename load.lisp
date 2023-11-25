@@ -14,3 +14,10 @@
 (interpol:enable-interpol-syntax)
 (5am:run! 'peg:peg-suite)
 
+#+nil
+(5am:run! 'peg:grammar-suite)
+#+nil
+(5am:run! 'peg:parser-suite)
+#+nil
+(5am:run! 'peg:peg-suite)
+
