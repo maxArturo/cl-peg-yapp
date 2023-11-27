@@ -21,22 +21,6 @@ Number   <- [0-9]+
 Variable <- identifier
 
 
-# And here is one for a document.
-Document <- (Paragraph Endline Endline)+
-Paragraph <- (!Endline Sentence)+ Endline
-
-EndLine     <- LF / CRLF / CR
-
-TextBlock <- Sentence+ TextBlockTerminal
-TextBlockTerminal <- Cr / Lf / (Cr Lf)
-Cr <- '\r'
-Lf <- '\n'
-Sentence <- (!SentenceTerminal Word)+ SentenceTerminal
-SentenceTerminal <- '.' / '!' / '?'
-Word <- (!WordTerminal [A-Za-z])+
-WordTerminal <- Space / ',' / '-' / ';'
-Space <- ' '
-
 # here is one for the spec itself
 CommentLine <- SP* ('# ' Comment)? EndLine
 ExpressionId <- (Upper Lower+)+

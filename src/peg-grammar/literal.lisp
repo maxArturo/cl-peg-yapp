@@ -32,7 +32,9 @@
           (char-literal #\')
           (one-or-more
            (compose
-            (negative-lookahead (char-literal #\'))
+            (negative-lookahead 
+              (or-expr (char-literal #\')
+                       (string-expr "\'")))
             #'any-char))
           (char-literal #\')))
 #+5am

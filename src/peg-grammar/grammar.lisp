@@ -8,10 +8,10 @@
 
 ; Spec       <-- ComEndLine*
 ;                (Definition ComEndLine*)+
-(defexpr
- spec
+(defexpr spec
  (compose
   (zero-or-more #'comment-endline)
+  (zero-or-more #'end-line)
   (one-or-more
    (compose
     #'definition

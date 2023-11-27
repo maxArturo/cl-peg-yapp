@@ -12,15 +12,19 @@
 (defmacro defpattern (pattern-kind expr-lambda &optional exp-p)
   "defines an expression pattern, optionally
    interpreted as a meaningful expression node."
-  `(defun ,pattern-kind (input index)
-     (declare (list input) (fixnum index))
-     (let* ((result (funcall ,expr-lambda input index))
-            (result-match 
-              (and result
-                   (new-match 
-                     input index (match-end result) result
-                     ,(and exp-p (intern (symbol-name pattern-kind) "KEYWORD"))))))
-       (compact-match result-match))))
+  (let ((pattern-keyword (intern (symbol-name pattern-kind) "KEYWORD")))
+    `(defun ,pattern-kind (input index)
+       (declare (list input) (fixnum index))
+       (let* ((result (funcall ,expr-lambda input index))
+              (result-match 
+                (and result
+                     (new-match 
+                       input index (match-end result) result
+                       ,(and exp-p pattern-keyword)))))
+         (if (and *print-match-error* (not result-match))
+             (format t "Did not match for ~a in index: ~a~%"
+                     ,pattern-keyword index))
+         (compact-match result-match)))))
 
 (defmacro defexpr (parent-kind expr-lambda)
   "defines the main lambda thunk for applying an 

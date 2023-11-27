@@ -1,37 +1,16 @@
-;; base parser
-;; heavily based on the original paper and
-;; https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
-
-(in-package #:peg-parser)
+(in-package #:peg-scanner)
 
 #+5am
-(5am:in-suite parser-suite)
+(5am:in-suite scanner-suite)
 
-(defvar *input-buffer*)
-
-(defun load-config (&key (filename "input.peg"))
+(defun parse-grammar (&optional (filename (pathname #p"grammars/peg-simple.peg")))
   "loads the input grammar file (*.peg)"
-  (setf *input-buffer* (uiop:read-file-string filename)))
+  (let ((grammar-str (coerce (uiop:read-file-string filename) 'list)))
+    (spec grammar-str 0)))
+#+nil
+(let (
+      (PEG-PARSER::*compacted-tree* t)
+      (peg-parser::*print-match-error* t)
+      )
+  (parse-grammar (pathname #p"grammars/math.peg")))
 
-;; sample usage
-(load-config :filename "/Users/max/Developer/cl-peg-yapp/grammars/example.peg")
-
-;; go from lowest to highest precedence
-(defun load-grammar (grammar-str)
-  "loads a grammar from a string representation"
-  (let ((lines (uiop:split-string grammar-str :separator
-                                  '(#\return #\newline))))
-    lines))
-(load-grammar *input-buffer*)
-
-
-; an expression applies its rules greedily. It will:
-; - view the next char, and either: 
-;   - fail on its condition
-;   - advance to next char while
-;     - its condition is true or
-;     - EOF
-; the parsed output is a chain of these expressions.
-
-(defparameter *terminal-expressions*
-              (list :literal :eps :dot :range))
