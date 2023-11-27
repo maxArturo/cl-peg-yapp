@@ -22,7 +22,7 @@
                        input index (match-end result) result
                        ,(and exp-p pattern-keyword)))))
          (if (and *print-match-error* (not result-match))
-             (format t "Did not match for ~a in index: ~a~%"
+             (format t "Did not match for ~a in index: ~a"
                      ,pattern-keyword index))
          (compact-match result-match)))))
 
@@ -211,11 +211,11 @@
   (5am:is (equalp (empty-match (coerce "booyah" 'list) 0)
                   (funcall (zero-or-more (char-literal #\f))
                            (coerce "booyah" 'list) 0)))
-  (5am:is (equalp (new-match (coerce "hello" 'list) 0 1)
-                  (first (match-children (funcall
-                                           (zero-or-more
-                                             #'any-char)
-                                           (coerce "hello" 'list) 0))))))
+  (5am:is (equalp (new-match (coerce "hello" 'list) 0 5)
+                  (funcall
+                    (zero-or-more
+                      #'any-char)
+                    (coerce "hello" 'list) 0))))
 
 (defun one-or-more (expr)
   "will apply expr greedily. Must succeed at least

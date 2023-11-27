@@ -1,11 +1,3 @@
-# heavily based on the original paper and
-# https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
-#
-# start with the smallest subset possible
-# for now characters are self defining
-# some words and spaces, that's it
-# example taken from https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
-
 
 # Here is a grammar for basic math
 Expr     <- Factor AddExpr*
@@ -19,11 +11,4 @@ Primary  <- '(' Expr ')'
 
 Number   <- [0-9]+
 Variable <- identifier
-
-
-# here is one for the spec itself
-CommentLine <- SP* ('# ' Comment)? EndLine
-ExpressionId <- (Upper Lower+)+
-ExpressionDef <- SP* ExpressionId SP+ '<-' SP+
-
 

@@ -10,7 +10,7 @@
 #+nil
 (let (
       (PEG-PARSER::*compacted-tree* t)
-      (peg-parser::*print-match-error* t)
+      ;(peg-parser::*print-match-error* t)
       )
   (parse-grammar (pathname #p"grammars/math.peg")))
 

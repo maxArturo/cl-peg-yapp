@@ -10,12 +10,55 @@
 #+5am
 (5am:def-suite* entities-suite :in parser-suite)
 
-(defstruct match
+(defun pprint-peg-match (match &optional (stream *standard-output*) (depth))
+  "Pretty-prints the MATCH struct using pretty-print dispatch tables."
+  (declare (ignore depth))
+  (let ((start (match-start match))
+        (end (match-end match))
+        (str (coerce (substitute #\| #\Newline (match-str match)) 'string) )
+        (kind (match-kind match))
+        (children (match-children match)))
+
+    (pprint-logical-block 
+      (stream nil :prefix "#S(MATCH" :suffix ")")
+      ;; Print KIND, START, END
+      (format stream " :KIND ~S" kind)
+      (format stream " :START ~D" start)
+      (format stream " :END ~D " end)
+
+      ;; Print matched string
+      (when str
+        (pprint-newline :fill stream)
+        (format stream "matched string: `~S`" (subseq str start end)))
+
+      ;; Print CHILDREN
+      (when children
+        (pprint-newline :mandatory stream)
+        (format stream ":CHILDREN")
+        (pprint-logical-block 
+          (stream nil :prefix " (" :suffix ")")
+          (dolist (child children)
+            (pprint-newline :mandatory stream)
+            (pprint-peg-match child stream)))))))
+
+(defstruct 
+  (match (:print-function pprint-peg-match))
   (str nil :type list)
   (start 0 :type fixnum)
   (end 0 :type fixnum)
   children
   kind)
+
+#+nil
+(let ((*print-pretty* t)
+      (*compacted-tree* nil)
+      (my-match (new-match 
+                  nil 0 0 
+                  (list (new-match nil 0 0) 
+                        (new-match nil 0 0 nil :bar) 
+                        (new-match nil 0 0) 
+                        (new-match nil 0 0)) :foo)))
+  my-match)
 
 (defun empty-match (input i)
   (declare (list input) (fixnum i))
