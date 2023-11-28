@@ -1,7 +1,7 @@
 
 # Here is a grammar for basic math
-Expr     <- Factor AddExpr*
 AddExpr  <- ('+'/'-') Factor
+Expr     <- Factor AddExpr*
 Factor   <- Primary MulExpr*
 MulExpr  <- ('*'/'/') Primary
 Primary  <- '(' Expr ')'
@@ -10,5 +10,5 @@ Primary  <- '(' Expr ')'
           / '-' Primary
 
 Number   <- [0-9]+
-Variable <- identifier
+Variable <- [A-Za-z]+
 

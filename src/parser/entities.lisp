@@ -10,12 +10,20 @@
 #+5am
 (5am:def-suite* entities-suite :in parser-suite)
 
+(defun display-readable-chars (output char-list)
+ (dolist (el char-list)
+    (let* ((code (char-code el))
+           (is-base-ascii (and (>= code 32) (<= code 126)) ))
+      (format output "~@[ `~:c` ~]~@[~a~]" 
+              (and (not is-base-ascii) el) 
+              (and is-base-ascii el)))))
+
 (defun pprint-peg-match (match &optional (stream *standard-output*) (depth))
   "Pretty-prints the MATCH struct using pretty-print dispatch tables."
   (declare (ignore depth))
   (let ((start (match-start match))
         (end (match-end match))
-        (str (coerce (substitute #\| #\Newline (match-str match)) 'string) )
+        (str (match-str match))
         (kind (match-kind match))
         (children (match-children match)))
 
@@ -27,14 +35,16 @@
       (format stream " :END ~D " end)
 
       ;; Print matched string
-      (when str
-        (pprint-newline :fill stream)
-        (format stream "matched string: `~S`" (subseq str start end)))
+
+      (when str 
+        (format stream "matched str: >>>")
+        (display-readable-chars stream (subseq str start end))
+        (format stream "<<< "))
 
       ;; Print CHILDREN
       (when children
-        (pprint-newline :mandatory stream)
         (format stream ":CHILDREN")
+        (pprint-newline :mandatory stream)
         (pprint-logical-block 
           (stream nil :prefix " (" :suffix ")")
           (dolist (child children)

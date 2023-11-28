@@ -12,7 +12,6 @@
   :components
   ((:file "package")
    (:file "test-suites")
-   (:file "scanner")
    (:module "parser"
             :components
             ((:file "tree")
@@ -24,4 +23,5 @@
              (:file "quant")
              (:file "literal")
              (:file "sequence")
-             (:file "grammar")))))
+             (:file "grammar")))
+   (:file "scanner")))

@@ -117,7 +117,7 @@
 
 ; Parses against a regex-style set of char options,
 ; including ranges, e.g. [A-Za-z0-9] 
-(defpattern range-expr
+(defexpr range-expr
          (compose
           (char-literal #\[)
           (one-or-more

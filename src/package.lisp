@@ -36,6 +36,7 @@
     #:string-expr
     #:defexpr
     #:defpattern
+    #:parse
     ))
 
 (uiop:define-package 
@@ -47,6 +48,6 @@
 
 (uiop:define-package 
   #:peg-scanner
-  (:use #:cl #:peg-grammar)
-  (:import-from #:peg #:scanner-suite))
+  (:import-from #:peg #:scanner-suite)
+  (:use #:cl #:peg-parser #:peg-grammar))
 

@@ -3,14 +3,22 @@
 #+5am
 (5am:in-suite scanner-suite)
 
-(defun parse-grammar (&optional (filename (pathname #p"grammars/peg-simple.peg")))
-  "loads the input grammar file (*.peg)"
-  (let ((grammar-str (coerce (uiop:read-file-string filename) 'list)))
-    (spec grammar-str 0)))
+(defun parse-grammar (grammar-string)
+  (declare (string grammar-string))
+  (parse #'peg-grammar:spec grammar-string))
+
 #+nil
 (let (
       (PEG-PARSER::*compacted-tree* t)
+      ;(peg-parser::*packrat-enabled* nil)
       ;(peg-parser::*print-match-error* t)
       )
-  (parse-grammar (pathname #p"grammars/math.peg")))
+  (parse-grammar 
+    (uiop:read-file-string (pathname #p"grammars/example.peg"))))
+
+#+nil
+(spec 
+  (coerce
+  (uiop:read-file-string (pathname #p"grammars/example.peg"))
+    'list) 0)
 

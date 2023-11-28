@@ -9,20 +9,31 @@
 #+5am
 (5am:def-suite* base-suite :in parser-suite)
 
+(defmacro with-caching (hash-key &body body)
+  `(if *packrat-enabled* 
+       (let ((cached-result (gethash ,hash-key *tree-hash*)))
+         (or cached-result
+             (setf (gethash ,hash-key *tree-hash*)
+                   ,@body)))
+       ,@body))
+
 (defmacro defpattern (pattern-kind expr-lambda &optional exp-p)
   "defines an expression pattern, optionally
    interpreted as a meaningful expression node."
   (let ((pattern-keyword (intern (symbol-name pattern-kind) "KEYWORD")))
     `(defun ,pattern-kind (input index)
        (declare (list input) (fixnum index))
-       (let* ((result (funcall ,expr-lambda input index))
+       (let* ((result 
+                (with-caching 
+                  (format nil "~A-~A" ,pattern-keyword index)
+                  (funcall ,expr-lambda input index)))
               (result-match 
                 (and result
                      (new-match 
                        input index (match-end result) result
                        ,(and exp-p pattern-keyword)))))
          (if (and *print-match-error* (not result-match))
-             (format t "Did not match for ~a in index: ~a"
+             (format t "Did not match for ~a in index: ~a~&"
                      ,pattern-keyword index))
          (compact-match result-match)))))
 
