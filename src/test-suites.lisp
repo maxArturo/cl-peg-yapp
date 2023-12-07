@@ -1,4 +1,4 @@
-(in-package #:peg)
+(in-package #:cl-peg-yapp)
 #+5am
 (5am:def-suite peg-suite
  :description "Suite containing all tests")

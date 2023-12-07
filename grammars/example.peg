@@ -1,15 +1,7 @@
-# heavily based on the original paper and
-# https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
-#
-# start with the smallest subset possible
-# for now characters are self defining
-# some words and spaces, that's it
-# example taken from https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
-
 
 # Here is a grammar for basic math
-Expr     <- Factor AddExpr*
 AddExpr  <- ('+'/'-') Factor
+Expr     <- Factor AddExpr*
 Factor   <- Primary MulExpr*
 MulExpr  <- ('*'/'/') Primary
 Primary  <- '(' Expr ')'
@@ -18,28 +10,5 @@ Primary  <- '(' Expr ')'
           / '-' Primary
 
 Number   <- [0-9]+
-Variable <- identifier
-
-
-# And here is one for a document.
-Document <- (Paragraph Endline Endline)+
-Paragraph <- (!Endline Sentence)+ Endline
-
-EndLine     <- LF / CRLF / CR
-
-TextBlock <- Sentence+ TextBlockTerminal
-TextBlockTerminal <- Cr / Lf / (Cr Lf)
-Cr <- '\r'
-Lf <- '\n'
-Sentence <- (!SentenceTerminal Word)+ SentenceTerminal
-SentenceTerminal <- '.' / '!' / '?'
-Word <- (!WordTerminal [A-Za-z])+
-WordTerminal <- Space / ',' / '-' / ';'
-Space <- ' '
-
-# here is one for the spec itself
-CommentLine <- SP* ('# ' Comment)? EndLine
-ExpressionId <- (Upper Lower+)+
-ExpressionDef <- SP* ExpressionId SP+ '<-' SP+
-
+Variable <- [A-Za-z]+
 
