@@ -108,6 +108,12 @@
 (5am:test unicode-test
           (5am:is (funcall 'unicode
                     (coerce "u10AAFFforyou" 'list) 0))
+          ; unicode latin block start
+          (5am:is (funcall 'unicode
+                    (coerce "u0000" 'list) 0))
+          ; unicode latin block end
+          (5am:is (funcall 'unicode
+                    (coerce "u007F" 'list) 0))
           (5am:is (funcall 'unicode
                     (coerce "uFEFECEC" 'list) 0))
           (5am:is (eq NIL (funcall 'unicode
@@ -144,18 +150,49 @@
          (or-expr
           'unicode
           'range-expr
-          'string-literal))
+          'string-literal
+          ; we're also adding here character classes
+          'alphanum-class
+          'alpha-class
+          'numeric-class
+          'string-class
+          'unipoint-class
+          ))
 #+5am
-(5am:test simple-test
-          (5am:is
-           (funcall
+(5am:test 
+ simple-test
+ (5am:is
+  (funcall
+    'simple
+    (coerce "[`A-Za-z0-9_]" 'list) 0))
+ (5am:is
+  (funcall
+    'simple
+    (coerce "u10AAFFforyou" 'list) 0))
+ (5am:is
+  (simple (coerce "alphanum" 'list) 0))
+ (5am:is (eq NIL
+             (funcall
                'simple
-             (coerce "[`A-Za-z0-9_]" 'list) 0))
-          (5am:is
-           (funcall
-               'simple
-             (coerce "u10AAFFforyou" 'list) 0))
-          (5am:is (eq NIL
-                      (funcall
-                          'simple
-                        (coerce "[]|`A-Za-z0-9_" 'list) 0))))
+               (coerce "[]|`A-Za-z0-9_" 'list) 0))))
+
+;; All of these definitions parse 
+;; the literal that represents a particular character
+;; class. It's up to the parser to actually do something
+;; with the denoted class
+
+(defexpr unipoint-class
+         (string-expr "unipoint"))
+
+(defexpr numeric-class
+         (string-expr "numeric"))
+
+(defexpr alpha-class
+         (string-expr "alpha"))
+
+(defexpr alphanum-class
+         (string-expr "alphanum"))
+
+(defexpr string-class
+         (string-expr "string"))
+

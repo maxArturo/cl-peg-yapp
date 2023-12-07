@@ -14,7 +14,7 @@
       ;(cl-peg-yapp/peg-parser::*print-match-error* t)
       )
   (parse-grammar 
-    (uiop:read-file-string (pathname #p"grammars/example.peg"))))
+    (uiop:read-file-string (pathname #p"grammars/peg-simple.peg"))))
 
 #+nil
 (spec 
