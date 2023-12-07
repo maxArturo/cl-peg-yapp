@@ -1,10 +1,10 @@
-(in-package #:cl)
+(in-package #:cl-user)
 
-;; needed to enable interpol syntax
+; needed to enable string interpolation
 (interpol:enable-interpol-syntax)
 
 (uiop:define-package 
-  #:peg
+  #:cl-peg-yapp
   (:use #:cl)
   (:export #:peg-suite
    #:parser-suite
@@ -12,9 +12,9 @@
    #:scanner-suite)) 
 
 (uiop:define-package 
-  #:peg-parser
-  (:use #:cl #:peg)
-  (:import-from #:peg
+  #:cl-peg-yapp/peg-parser
+  (:use #:cl #:cl-peg-yapp)
+  (:import-from #:cl-peg-yapp
    #:parser-suite)
   (:import-from #:alexandria
    #:ensure-list
@@ -40,14 +40,14 @@
     ))
 
 (uiop:define-package 
-  #:peg-grammar
-  (:use #:cl #:peg-parser)
-  (:import-from #:peg #:grammar-suite)
+  #:cl-peg-yapp/peg-grammar
+  (:use #:cl #:cl-peg-yapp/peg-parser)
+  (:import-from #:cl-peg-yapp #:grammar-suite)
   (:export 
     #:spec))
 
 (uiop:define-package 
-  #:peg-scanner
-  (:import-from #:peg #:scanner-suite)
-  (:use #:cl #:peg-parser #:peg-grammar))
+  #:cl-peg-yapp/peg-scanner
+  (:import-from #:cl-peg-yapp #:scanner-suite)
+  (:use #:cl #:cl-peg-yapp/peg-parser #:cl-peg-yapp/peg-grammar))
 

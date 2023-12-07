@@ -1,7 +1,7 @@
 ;;; This file includes tree representation code for a compacted
 ;;; version of the match trees.
 
-(in-package #:peg-parser)
+(in-package #:cl-peg-yapp/peg-parser)
 
 #+5am
 (5am:def-suite* tree-suite :in parser-suite)

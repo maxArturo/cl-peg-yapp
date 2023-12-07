@@ -1,7 +1,7 @@
 ;;; This file includes functions for parsing sequences
 ;;; in peg grammar.
 
-(in-package #:peg-grammar)
+(in-package #:cl-peg-yapp/peg-grammar)
 
 #+5am
 (5am:def-suite* sequence-suite :in grammar-suite)
@@ -68,7 +68,7 @@
                         (coerce "333" 'list) 0))))
 
 ; PosLook <- '&' Primary Quant?
-(defexpr pos-lok
+(defexpr pos-look
   (compose (char-literal #\&) #'primary
            (opt-expr #'quant)))
 
@@ -101,7 +101,7 @@
     #'expression))
 #+nil
 (let (
-      (peg-parser::*print-match-error* t)
+      (cl-peg-yapp/peg-parser::*print-match-error* t)
       )
  (funcall #'definition
                     (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0) 

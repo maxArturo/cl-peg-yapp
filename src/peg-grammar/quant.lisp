@@ -1,7 +1,7 @@
 ;;; This file includes functions for parsing quantifiers
 ;;; in peg grammar.
 
-(in-package #:peg-grammar)
+(in-package #:cl-peg-yapp/peg-grammar)
 
 #+5am
 (5am:def-suite* quant-suite :in grammar-suite)

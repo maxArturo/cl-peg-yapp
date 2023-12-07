@@ -1,17 +1,17 @@
-(in-package #:peg-scanner)
+(in-package #:cl-peg-yapp/peg-scanner)
 
 #+5am
 (5am:in-suite scanner-suite)
 
 (defun parse-grammar (grammar-string)
   (declare (string grammar-string))
-  (parse #'peg-grammar:spec grammar-string))
+  (parse #'cl-peg-yapp/peg-grammar:spec grammar-string))
 
 #+nil
 (let (
-      (PEG-PARSER::*compacted-tree* t)
-      ;(peg-parser::*packrat-enabled* nil)
-      ;(peg-parser::*print-match-error* t)
+      (cl-peg-yapp/peg-parser::*compacted-tree* t)
+      ;(cl-peg-yapp/peg-parser::*packrat-enabled* nil)
+      ;(cl-peg-yapp/peg-parser::*print-match-error* t)
       )
   (parse-grammar 
     (uiop:read-file-string (pathname #p"grammars/example.peg"))))

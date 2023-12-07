@@ -5,7 +5,7 @@
 ;;; is the index where subsequent matches would begin. A zero-length 
 ;;; match would have start == end. 
 
-(in-package #:peg-parser)
+(in-package #:cl-peg-yapp/peg-parser)
 
 #+5am
 (5am:def-suite* entities-suite :in parser-suite)

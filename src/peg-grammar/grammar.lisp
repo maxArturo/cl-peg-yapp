@@ -1,7 +1,7 @@
 ;;; This file has the top level definitions
 ;;; for a grammar.
 
-(in-package #:peg-grammar)
+(in-package #:cl-peg-yapp/peg-grammar)
 
 #+5am
 (5am:def-suite* full-spec-suite :in grammar-suite)

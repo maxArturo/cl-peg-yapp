@@ -4,7 +4,7 @@
 ;;; a generated parser, including the actual PEG parser that lives
 ;;; in `src/peg-grammar`. 
 
-(in-package #:peg-parser)
+(in-package #:cl-peg-yapp/peg-parser)
 
 #+5am
 (5am:def-suite* base-suite :in parser-suite)

@@ -1,7 +1,7 @@
 ;;; This file includes functions for parsing literals
 ;;; in peg grammar.
 
-(in-package #:peg-grammar)
+(in-package #:cl-peg-yapp/peg-grammar)
 
 #+5am
 (5am:def-suite* literal-suite :in grammar-suite)
