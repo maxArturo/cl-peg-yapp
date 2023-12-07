@@ -35,11 +35,10 @@
       (format stream " :END ~D " end)
 
       ;; Print matched string
-
       (when str 
-        (format stream "matched str: >>>")
+        (format stream "matched str: >>>|")
         (display-readable-chars stream (subseq str start end))
-        (format stream "<<< "))
+        (format stream "|<<< "))
 
       ;; Print CHILDREN
       (when children

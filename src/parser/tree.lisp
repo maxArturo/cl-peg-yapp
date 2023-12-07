@@ -17,8 +17,9 @@
 (defun parse (parse-expr grammar)
   (declare (string grammar))
   (let ((*packrat-enabled* t)
-        (*tree-hash* (make-hash-table)))
-    (funcall parse-expr (coerce grammar 'list) 0)))
+        (*tree-hash* (make-hash-table))
+        (grammar-list (coerce grammar 'list)))
+    (funcall parse-expr grammar-list 0)))
 
 #+nil
 (parse 

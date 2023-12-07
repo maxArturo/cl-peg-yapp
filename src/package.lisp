@@ -22,6 +22,8 @@
   (:export
     #:match
     #:empty-match
+    #:match-start
+    #:match-end
     #:any-char
     #:char-literal
     #:char-range

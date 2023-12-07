@@ -14,12 +14,18 @@
       (compose
         (zero-or-more #'spacing)
         (char-literal #\/)
-        (zero-or-more (char-literal #\SP))
+        (zero-or-more #'spacing)
         #'sequence-expr))))
 #+5am
-(5am:test expression-test
-          (5am:is (funcall #'expression
-                    (coerce "'+'/'-'" 'list) 0)))
+(5am:test 
+ expression-test
+ (5am:is (expression
+           (coerce "'+'/'-'" 'list) 0))
+ (5am:is (expression
+           (coerce "!']' (alphanum '-' alphanum / alphanum)" 'list) 0))
+ (5am:is (expression
+           (coerce "alphanum / numeric" 'list) 0))
+ )
 
 ; Sequence <- Rule (Spacing Rule)*
 (defexpr sequence-expr
@@ -29,9 +35,17 @@
       (compose
         #'spacing #'rule))))
 #+5am
-(5am:test sequence-expr-test
-          (5am:is (funcall #'sequence-expr
-                    (coerce "'+'" 'list) 0)))
+(5am:test 
+ sequence-expr-test
+ (5am:is (funcall #'sequence-expr
+                  (coerce "'+'" 'list) 0))
+ (5am:is (sequence-expr
+           (coerce "!']' &'[' " 'list) 0))
+ (5am:is (sequence-expr
+           (coerce "!']' ('a'/ 'b')" 'list) 0))
+ (5am:is (sequence-expr
+           (coerce "(!string / 'b')" 'list) 0)))
+
 
 
 ; Rule <- PosLook / NegLook / Plain
@@ -76,6 +90,10 @@
 (defexpr neg-look
   (compose (char-literal #\!) #'primary
            (opt-expr #'quant)))
+(5am:test 
+ neg-look-test
+ (5am:is (neg-look
+           (coerce "!']'" 'list) 0)))
 
 ; Primary <- Simple / CheckId / '(' Expression ')'
 (defexpr primary
@@ -83,12 +101,16 @@
           #'simple #'check-id
           (compose
            (char-literal #\()
+           (zero-or-more (char-literal #\SP))
            #'expression
+           (zero-or-more (char-literal #\SP))
            (char-literal #\)))))
 #+5am
 (5am:test primary-test
-          (5am:is (funcall #'primary
-                    (coerce "('+'/'-')" 'list) 0)))
+          (5am:is (primary
+                    (coerce "('+'/'-')" 'list) 0))
+          (5am:is (primary
+           (coerce "(!']' (alphanum '-' alphanum / alphanum) )" 'list) 0)))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
 (defexpr definition
@@ -99,20 +121,25 @@
              (char-literal #\LEFTWARDS_ARROW))
     (one-or-more (char-literal #\SP))
     #'expression))
-#+nil
-(let (
-      (cl-peg-yapp/peg-parser::*print-match-error* t)
-      )
- (funcall #'definition
-                    (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0) 
-  )
 
 #+5am
-(5am:test scan-def-test
-          (5am:is (funcall #'definition
-                    (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0))
-          (5am:is (funcall #'definition
-                    (coerce "First <- [a-d]" 'list) 0))
-          (5am:is (eq NIL
-                      (funcall #'definition
-                        (coerce "HelloWorld" 'list) 0))))
+(5am:test 
+ scan-def-test
+ (5am:is (funcall #'definition
+                  (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0))
+ (5am:is (funcall #'definition
+                  (coerce "First <- [a-d]" 'list) 0))
+ (5am:is (eq NIL
+             (funcall #'definition
+                      (coerce "HelloWorld" 'list) 0)))
+ (5am:is 
+  (let* ((test-str (coerce #?"\
+Simple     <-   unipoint
+  / '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
+  / string" 'list))
+  (test-len (length test-str))
+  (res (definition test-str 0)))
+        (format t "length is: ~a" test-len)
+        (format t "~&parsed length is: ~a" (match-end res))
+        (print res)
+        (eql test-len (match-end res)))))
