@@ -1,36 +1,53 @@
-(in-package #:cl)
+(in-package #:cl-user)
 
-;; needed to enable interpol syntax
+; needed to enable string interpolation
 (interpol:enable-interpol-syntax)
 
-(defpackage #:peg
-  (:use #:cl #:trivia)
+(uiop:define-package 
+  #:cl-peg-yapp
+  (:use #:cl)
   (:export #:peg-suite
-           #:parser-suite
-           #:grammar-suite
-           #:scanner-suite))
+   #:parser-suite
+   #:grammar-suite
+   #:scanner-suite)) 
 
-(defpackage #:peg-parser
-  (:use #:cl #:peg)
+(uiop:define-package 
+  #:cl-peg-yapp/peg-parser
+  (:use #:cl #:cl-peg-yapp)
+  (:import-from #:cl-peg-yapp
+   #:parser-suite)
+  (:import-from #:alexandria
+   #:ensure-list
+   #:flatten)
   (:export
-   #:match
-   #:empty-match
-   #:any-char
-   #:char-literal
-   #:char-range
-   #:positive-lookahead
-   #:negative-lookahead
-   #:compose
-   #:times
-   #:zero-or-more
-   #:one-or-more
-   #:opt-expr
-   #:or-expr
-   #:string-expr
-   #:def-exp))
+    #:match
+    #:empty-match
+    #:any-char
+    #:char-literal
+    #:char-range
+    #:positive-lookahead
+    #:negative-lookahead
+    #:compose
+    #:times
+    #:zero-or-more
+    #:one-or-more
+    #:opt-expr
+    #:or-expr
+    #:string-expr
+    #:defexpr
+    #:defpattern
+    #:parse
+    ))
 
-(defpackage #:peg-grammar
-  (:use #:cl #:peg #:peg-parser))
+(uiop:define-package 
+  #:cl-peg-yapp/peg-grammar
+  (:use #:cl #:cl-peg-yapp/peg-parser)
+  (:import-from #:cl-peg-yapp #:grammar-suite)
+  (:export 
+    #:spec))
 
-(defpackage #:peg-scanner
-  (:use #:cl #:peg #:peg-grammar))
+(uiop:define-package 
+  #:cl-peg-yapp/peg-scanner
+  (:import-from #:cl-peg-yapp #:scanner-suite)
+  (:use #:cl #:cl-peg-yapp/peg-parser #:cl-peg-yapp/peg-grammar))
+

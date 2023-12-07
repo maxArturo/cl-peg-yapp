@@ -1,37 +1,24 @@
-;; base parser
-;; heavily based on the original paper and
-;; https://github.com/PhilippeSigaud/Pegged/wiki/PEG-Basics
-
-(in-package #:peg-parser)
+(in-package #:cl-peg-yapp/peg-scanner)
 
 #+5am
-(5am:in-suite parser-suite)
+(5am:in-suite scanner-suite)
 
-(defvar *input-buffer*)
+(defun parse-grammar (grammar-string)
+  (declare (string grammar-string))
+  (parse #'cl-peg-yapp/peg-grammar:spec grammar-string))
 
-(defun load-config (&key (filename "input.peg"))
-  "loads the input grammar file (*.peg)"
-  (setf *input-buffer* (uiop:read-file-string filename)))
+#+nil
+(let (
+      (cl-peg-yapp/peg-parser::*compacted-tree* t)
+      ;(cl-peg-yapp/peg-parser::*packrat-enabled* nil)
+      ;(cl-peg-yapp/peg-parser::*print-match-error* t)
+      )
+  (parse-grammar 
+    (uiop:read-file-string (pathname #p"grammars/example.peg"))))
 
-;; sample usage
-(load-config :filename "/Users/max/Developer/cl-peg-yapp/grammars/example.peg")
+#+nil
+(spec 
+  (coerce
+  (uiop:read-file-string (pathname #p"grammars/example.peg"))
+    'list) 0)
 
-;; go from lowest to highest precedence
-(defun load-grammar (grammar-str)
-  "loads a grammar from a string representation"
-  (let ((lines (uiop:split-string grammar-str :separator
-                                  '(#\return #\newline))))
-    lines))
-(load-grammar *input-buffer*)
-
-
-; an expression applies its rules greedily. It will:
-; - view the next char, and either: 
-;   - fail on its condition
-;   - advance to next char while
-;     - its condition is true or
-;     - EOF
-; the parsed output is a chain of these expressions.
-
-(defparameter *terminal-expressions*
-              (list :literal :eps :dot :range))

@@ -12,10 +12,10 @@
   :components
   ((:file "package")
    (:file "test-suites")
-   (:file "scanner")
    (:module "parser"
             :components
-            ((:file "entities")
+            ((:file "tree")
+             (:file "entities")
              (:file "patterns")))
    (:module "peg-grammar"
             :components
@@ -23,4 +23,5 @@
              (:file "quant")
              (:file "literal")
              (:file "sequence")
-             (:file "grammar")))))
+             (:file "grammar")))
+   (:file "scanner")))

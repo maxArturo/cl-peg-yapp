@@ -1,0 +1,17 @@
+# And here is one for a document.
+
+Document <- (Paragraph Endline Endline)+
+Paragraph <- (!Endline Sentence)+ Endline
+
+EndLine     <- LF / CRLF / CR
+
+TextBlock <- Sentence+ TextBlockTerminal
+TextBlockTerminal <- Cr / Lf / (Cr Lf)
+Cr <- '\r'
+Lf <- '\n'
+Sentence <- (!SentenceTerminal Word)+ SentenceTerminal
+SentenceTerminal <- '.' / '!' / '?'
+Word <- (!WordTerminal [A-Za-z])+
+WordTerminal <- Space / ',' / '-' / ';'
+Space <- ' '
+

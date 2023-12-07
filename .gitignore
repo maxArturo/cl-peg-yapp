@@ -3,4 +3,5 @@ scratch.lisp
 Session.vim
 .vscode/alive/fasl/*.lisp
 *.fasl
+.vscode
 
