@@ -27,7 +27,7 @@ Plain      <- Primary Quant?
 Primary    <- Simple / CheckId / '(' Expression ')'
 
 Simple     <-   unipoint 
-              / '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
+              / '[' (!']' ( (alphanum '-' alphanum) / alphanum) )+ ']'
               / string
 
 Quant      <- Optional / MinZero / MinOne / MinMax / Amount
