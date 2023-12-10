@@ -27,7 +27,7 @@
                         (coerce "Jigaro" 'list) 0))))
 
 ; represents a single-quoted string, e.g. 'hello'
-(defpattern string-literal
+(defexpr string-literal
          (compose
           (char-literal #\')
           (one-or-more
@@ -97,7 +97,7 @@
                             (coerce "hunky" 'list) 0))))
 
 ; Unicode <- 'u' ('10' uphex{4} / uphex{4,5})
-(defpattern unicode
+(defexpr unicode
          (compose (char-literal #\u)
                   (or-expr
                    (compose
@@ -146,18 +146,18 @@
 
 ; represents literals for unicode, ranges of chars, or quoted
 ; strings 
-(defpattern simple
+(defexpr simple
          (or-expr
-          'unicode
-          'range-expr
-          'string-literal
-          ; we're also adding here character classes
-          'alphanum-class
-          'alpha-class
-          'numeric-class
-          'string-class
-          'unipoint-class
-          ))
+           'unicode
+           'range-expr
+           'string-literal
+           ; we're also adding here character classes
+           'alphanum-class
+           'alpha-class
+           'numeric-class
+           'string-class
+           'unipoint-class
+           ))
 #+5am
 (5am:test 
  simple-test
