@@ -7,7 +7,7 @@
   :license "MIT"
   :description "homebrew parsing expression grammar utility"
   :encoding :utf-8
-  :depends-on ("trivia" "for" "cl-ppcre" "alexandria" "cl-interpol")
+  :depends-on ("trivia" "for" "alexandria" "cl-interpol")
   :pathname "src/"
   :components
   ((:file "package")
@@ -24,4 +24,8 @@
              (:file "literal")
              (:file "sequence")
              (:file "grammar")))
-   (:file "scanner")))
+   (:file "scanner")
+   (:module "generator"
+            :components
+            ((:file "generator")))))
+

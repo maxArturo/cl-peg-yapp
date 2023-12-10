@@ -21,13 +21,3 @@
         (grammar-list (coerce grammar 'list)))
     (funcall parse-expr grammar-list 0)))
 
-#+nil
-(parse 
-  (or-expr
-       (char-literal #\f)
-       (char-literal #\i)
-       (char-literal #\g)
-       (char-literal #\a))
-  "arigar"
-  )
-

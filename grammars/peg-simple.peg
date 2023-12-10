@@ -1,6 +1,16 @@
 # PEG simplified
+#
 # This is the flavor of PEG that `cl-peg-yapp` works with. 
 # It's simplified from the more hardcore PEGN for my use cases.
+# 
+# Note that the following char classes are predefined in the
+# parser for convenience: 
+#
+# unipoint
+# numeric
+# alpha
+# alphanum
+# string
 
 Grammar    <- ComEndLine* (Definition ComEndLine*)+
 
@@ -16,9 +26,9 @@ EndLine    <-   u000D         # CR
 Definition <- CheckId ' '+ '<-' ' '+ Expression 
 
 CheckId    <- ([A-Z] [a-z]+)+
+
 Expression <- Sequence (Spacing* '/' ' '* Sequence)*
 Sequence   <- Rule (Spacing Rule)*
-
 Rule       <- PosLook / NegLook / Plain
 PosLook    <- '&' Primary Quant?
 NegLook    <- '!' Primary Quant?
@@ -34,7 +44,7 @@ Quant      <- Optional / MinZero / MinOne / MinMax / Amount
 
 Optional   <- '?'
 MinZero    <- '*'
-Minone     <- '+'
+MinOne     <- '+'
 MinMax     <- '{' numeric ',' numeric '}'
 Amount     <- '{' numeric '}'
 

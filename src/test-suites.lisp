@@ -18,3 +18,8 @@
  :in peg-suite
  :description "Suite for peg scanner")
 
+#+5am
+(5am:def-suite generator-suite
+ :in peg-suite
+ :description "Suite for parser generation")
+

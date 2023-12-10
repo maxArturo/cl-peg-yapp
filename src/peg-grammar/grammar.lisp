@@ -6,16 +6,14 @@
 #+5am
 (5am:def-suite* full-spec-suite :in grammar-suite)
 
-; Spec       <-- ComEndLine*
-;                (Definition ComEndLine*)+
-(defexpr spec
+; Grammar <- ComEndLine* (Definition ComEndLine*)+
+(defexpr grammar
          (compose
            (zero-or-more #'comment-endline)
            (one-or-more
              (compose
                #'definition
-               (zero-or-more #'comment-endline)))
-           (zero-or-more #'end-line)))
+               (zero-or-more #'end-line)))))
 #+5am
 (5am:test spec-test
   (5am:is 
