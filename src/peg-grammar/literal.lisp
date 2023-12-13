@@ -50,7 +50,7 @@
 ; parses a literal range of chars, e.g. 'a-z' or 
 ; '0-9'. Ranges must have a dash and must not start
 ; with a dash.
-(defpattern char-range-literal
+(defexpr char-range-literal
          (compose
           (negative-lookahead (char-literal #\-))
           #'any-char
@@ -60,8 +60,7 @@
 #+5am
 (5am:test char-range-literal-test
           (5am:is
-           (funcall
-               'char-range-literal
+           (char-range-literal
              (coerce "a-zforeva" 'list) 0))
           (5am:is (eq NIL
                       (funcall
@@ -81,6 +80,10 @@
           (5am:is (eq NIL
                       (funcall 'digit
                         (coerce "oneBacon" 'list) 0))))
+
+; specialized digit expr for parsing purposes
+(defexpr min-amount (one-or-more (char-range #\0 #\9)))
+(defexpr max-amount (one-or-more (char-range #\0 #\9)))
 
 ; parses upper-case hex letters and digits
 (defpattern uphex
@@ -135,14 +138,16 @@
           (char-literal #\])))
 #+5am
 (5am:test range-expr-test
-          (5am:is
-           (funcall
-               'range-expr
-             (coerce "[`A-Za-z0-9_]" 'list) 0))
-          (5am:is (eq NIL
-                      (funcall
-                          'range-expr
-                        (coerce "[]|`A-Za-z0-9_" 'list) 0))))
+  (5am:is
+   (range-expr
+     (coerce "[`_]" 'list) 0))
+  (5am:is
+   (range-expr
+     (coerce "[`A-Za-z0-9_]" 'list) 0))
+  (5am:is (eq NIL
+              (funcall
+                'range-expr
+                (coerce "[]|`A-Za-z0-9_" 'list) 0))))
 
 ; represents literals for unicode, ranges of chars, or quoted
 ; strings 
@@ -155,8 +160,6 @@
            'alphanum-class
            'alpha-class
            'numeric-class
-           'string-class
-           'unipoint-class
            ))
 #+5am
 (5am:test 
@@ -189,10 +192,4 @@
 
 (defexpr alpha-class
          (string-expr "alpha"))
-
-(defexpr alphanum-class
-         (string-expr "alphanum"))
-
-(defexpr string-class
-         (string-expr "string"))
 

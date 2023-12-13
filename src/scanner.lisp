@@ -8,4 +8,4 @@
          (uiop:read-file-string file)))
 
 #+nil
-(parse-grammar (pathname #p"grammars/basic.peg"))
+(parse-grammar (pathname #p"grammars/peg-simple.peg"))

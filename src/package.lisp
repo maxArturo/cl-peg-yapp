@@ -71,8 +71,8 @@
     #:sequence-expr
     #:definition
     #:lower-case
-    #:spec
     #:pos-look
+    #:grammar
     #:unicode-class
     #:check-id
     #:neg-look
@@ -104,6 +104,8 @@
 
 (uiop:define-package 
   #:cl-peg-yapp/peg-generator
+  (:import-from #:alexandria
+   #:flatten)
   (:import-from #:cl-peg-yapp #:generator-suite)
   (:import-from #:cl-peg-yapp/peg-scanner #:parse-grammar)
   (:use #:cl 

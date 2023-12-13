@@ -6,7 +6,7 @@
 #+5am
 (5am:def-suite* sequence-suite :in grammar-suite)
 
-; Expression <- Sequence (Spacing* '/' SP* Sequence)*
+; Expression <- Sequence (Spacing* '/' SP* Sequence)* Spacing*
 (defexpr expression
          (compose
            #'sequence-expr
@@ -43,13 +43,7 @@
  (5am:is (sequence-expr
            (coerce "!']' ('a'/ 'b')" 'list) 0))
  (5am:is (sequence-expr
-           (coerce "(!string / 'b')" 'list) 0)))
-
-
-
-; Rule <- PosLook / NegLook / Plain
-(defexpr rule
-         (or-expr #'pos-look #'neg-look #'plain))
+           (coerce "(!numeric/ 'b')" 'list) 0)))
 
 ; CheckId <- (upper lower+)+
 (defexpr check-id
@@ -64,6 +58,10 @@
   (5am:is (eq NIL
               (funcall #'check-id
                        (coerce "helloWorld" 'list) 0))))
+
+; Rule <- PosLook / NegLook / Plain
+(defexpr rule
+         (or-expr #'pos-look #'neg-look #'plain))
 
 ; Plain <- Primary Quant?
 (defexpr plain (compose #'primary (opt-expr #'quant)))
@@ -124,19 +122,21 @@
 #+5am
 (5am:test 
  scan-def-test
- (5am:is (funcall #'definition
-                  (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0))
- (5am:is (funcall #'definition
-                  (coerce "First <- [a-d]" 'list) 0))
- (5am:is (eq NIL
-             (funcall #'definition
-                      (coerce "HelloWorld" 'list) 0)))
- (let* ((test-str (coerce #?"\
-                             Simple     <-   unipoint
-                             / '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
-                          / string" 'list))
-                          (test-len (length test-str))
-                          (res (definition test-str 0)))
-       (5am:is 
-        (eql test-len (match-end res)))))
-
+ (5am:is 
+  (definition
+    (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0))
+ (5am:is 
+  (definition
+    (coerce "First <- [a-d]" 'list) 0))
+ (5am:is 
+  (eq NIL
+      (definition
+        (coerce "HelloWorld" 'list) 0)))
+ (let* ((test-str 
+          (coerce #?"\
+                     Simple <- '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
+          / numeric" 'list))
+          (test-len (length test-str))
+          (res (definition test-str 0)))
+   (5am:is 
+    (eql test-len (match-end res)))))
