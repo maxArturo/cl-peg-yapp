@@ -28,27 +28,27 @@
         (children (match-children match)))
 
     (pprint-logical-block 
-      (stream nil :prefix "#S(MATCH" :suffix ")")
+      (stream nil :prefix "#(M" :suffix ")")
+
       ;; Print KIND, START, END
       (format stream " :KIND ~S" kind)
-      (format stream " :START ~D" start)
-      (format stream " :END ~D " end)
+      (format stream " :START ~4,'0d" start)
+      (format stream " :END ~4,'0d " end)
 
       ;; Print matched string
       (when str 
         (format stream "matched str: >>>|")
         (display-readable-chars stream (subseq str start end))
-        (format stream "|<<< "))
+        (format stream "|<<<"))
 
       ;; Print CHILDREN
       (when children
         (format stream ":CHILDREN")
-        (pprint-newline :mandatory stream)
-        (pprint-logical-block 
-          (stream nil :prefix " (" :suffix ")")
-          (dolist (child children)
-            (pprint-newline :mandatory stream)
-            (pprint-peg-match child stream)))))))
+        ;(pprint-newline :mandatory stream)
+        (dolist (child children)
+          (pprint-newline :mandatory stream)
+          (pprint-peg-match child stream))
+        ))))
 
 (defstruct 
   (match (:print-function pprint-peg-match))

@@ -10,9 +10,9 @@
 (defexpr min-max-amount
          (compose
           (char-literal #\{)
-          (one-or-more 'digit)
+          (one-or-more #'min-amount)
           (char-literal #\,)
-          (one-or-more 'digit)
+          (one-or-more #'max-amount)
           (char-literal #\})))
 #+5am
 (5am:test min-max-amount-test

@@ -6,21 +6,19 @@
 # Note that the following char classes are predefined in the
 # parser for convenience: 
 #
-# unipoint
 # numeric
 # alpha
 # alphanum
-# string
 
 Grammar    <- ComEndLine* (Definition ComEndLine*)+
 
-# Comment/indenting section
+
 ComEndLine <- ' '* ('# ' Comment)? EndLine
-Comment    <- (!EndLine unipoint)+
+Comment    <- (!EndLine alphanum)+
 Spacing    <- ComEndLine? ' '+
 EndLine    <-   u000D         # CR
               / u000A         # LF
-              / (u000D u000A) # CR/LF
+              / (u000D u000A)
 
 # Definition section
 Definition <- CheckId ' '+ '<-' ' '+ Expression 
@@ -36,9 +34,7 @@ Plain      <- Primary Quant?
 
 Primary    <- Simple / CheckId / '(' Expression ')'
 
-Simple     <-   unipoint 
-              / '[' (!']' ( (alphanum '-' alphanum) / alphanum) )+ ']'
-              / string
+Simple     <- '[' (!']' ( (alphanum '-' alphanum) / alphanum) )+ ']'
 
 Quant      <- Optional / MinZero / MinOne / MinMax / Amount
 
