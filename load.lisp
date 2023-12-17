@@ -28,5 +28,7 @@
 #+nil
 (5am:run! 'cl-peg-yapp:peg-suite)
 #+nil
+(5am:run! 'cl-peg-yapp:scanner-suite)
+#+nil
 (list-all-packages)
 

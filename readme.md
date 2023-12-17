@@ -2,7 +2,8 @@
 
 > *Stands for "yet another PEG parser".*
 
-This is a hand-rolled implementation of a PEG parsing generator from
+This is a hand-rolled implementation of a [PEG](https://bford.info/packrat/) 
+parsing generator from
 first principles, for my own edification. The main objectives are parser
 generation: a provided PEG input should result in a generated parser,
 which can scan and parse a valid language sample.
@@ -19,4 +20,6 @@ You can find it under `grammars/peg-simple.peg`. The main caveats are:
 - expression definitions always are CamelCase, starting with upcase.
 - unicode literals (e.g. `u10EA44`) can be parsed, but other literals
   (binary, etc) are not implemented.
-- definition arrows are single-dash
+- definition arrows are single-dash, but both a unicode and compound arrow is accepted.
+
+

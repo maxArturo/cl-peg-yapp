@@ -119,6 +119,7 @@
            (one-or-more (char-literal #\SP))
            #'expression))
 
+(interpol:enable-interpol-syntax)
 #+5am
 (5am:test 
  scan-def-test

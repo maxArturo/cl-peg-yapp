@@ -3,6 +3,8 @@
 
 (in-package #:cl-peg-yapp/peg-grammar)
 
+(interpol:enable-interpol-syntax)
+
 #+5am
 (5am:def-suite* full-grammar-suite :in grammar-suite)
 
@@ -13,7 +15,7 @@
            (one-or-more
              (compose
                #'definition
-               (zero-or-more #'spacing)))))
+               (zero-or-more #'comment-endline)))))
 #+5am
 (5am:test grammar-test
   (5am:is 
