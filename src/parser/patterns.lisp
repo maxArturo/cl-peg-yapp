@@ -182,12 +182,13 @@
     (declare (list input) (fixnum index))
     (let ((start index)
           (results
-            (multiple-value-list (for:for
-                                   ((i repeat n)
-                                    (curr-ans = (funcall expr input index))
-                                    (curr-results collecting curr-ans))
-                                   (always curr-ans)
-                                   (setf index (match-end curr-ans))))))
+            (multiple-value-list 
+              (for:for
+                ((i repeat n)
+                 (curr-ans = (funcall expr input index))
+                 (curr-results collecting curr-ans))
+                (always curr-ans)
+                (setf index (match-end curr-ans))))))
       (and (first results)
            (new-match input start index (second results))))))
 #+5am
@@ -200,6 +201,39 @@
               (funcall
                 (times #'any-char 6)
                 (coerce "figar" 'list) 0))))
+
+(defun min-max-times (expr m n)
+  "Applies expr anywhere from m to n times, 
+   equivalent to `SomeExpr`{m,n} in PEG notation."
+  (declare (fixnum m n))
+  (assert (< m n))
+  (lambda (input index)
+    (declare (list input) (fixnum index))
+    (let* 
+      ((start index)
+       (min-res (funcall (times expr m) input index))
+       (max-res 
+         (and min-res
+              (funcall (times expr n) 
+                       input 
+                       (match-end min-res)))))
+      (and min-res
+           (new-match 
+             input start 
+             (match-end (or max-res min-res)) 
+             (append (match-children min-res)
+                     (and max-res 
+                          (match-children max-res))))))))
+#+5am
+(5am:test min-max-times-test
+  (5am:is
+   (funcall
+     (min-max-times #'any-char 3 5)
+     (coerce "figarlicious" 'list) 0))
+  (5am:is (eq NIL
+              (funcall
+                (min-max-times #'any-char 8 9)
+                (coerce "charlie" 'list) 0))))
 
 (defun zero-or-more (expr)
   "applies expr greedily, and never fails.

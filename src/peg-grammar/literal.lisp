@@ -193,3 +193,5 @@
 (defexpr alpha-class
          (string-expr "alpha"))
 
+(defexpr alphanum-class
+         (string-expr "alphanum"))

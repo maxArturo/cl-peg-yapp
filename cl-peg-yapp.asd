@@ -24,8 +24,8 @@
              (:file "literal")
              (:file "sequence")
              (:file "grammar")))
-   (:file "scanner")
    (:module "generator"
             :components
-            ((:file "generator")))))
+            ((:file "generator")))
+   (:file "scanner")))
 

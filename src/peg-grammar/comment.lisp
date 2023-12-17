@@ -44,7 +44,6 @@
 ; ComEndLine <- SP* ('# ' Comment)? EndLine
 (defexpr comment-endline
          (compose
-           (zero-or-more (char-literal #\SP))
            (opt-expr #'comment-line)
            #'end-line))
 #+5am

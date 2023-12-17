@@ -6,9 +6,14 @@
 # Note that the following char classes are predefined in the
 # parser for convenience: 
 #
-# numeric
-# alpha
-# alphanum
+# numeric: [0-9]
+# alpha: [A-Za-z]
+# alphanum [A-Za-z0-9]
+#
+# An implicit definition of the `Spacing` rule is that all
+# definitions must be terminated with a newline. However, 
+# comments and arbitrary amounts of newlines are accepted for
+# indentation and clarity.
 
 Grammar    <- ComEndLine* (Definition ComEndLine*)+
 
@@ -21,11 +26,11 @@ EndLine    <-   u000D         # CR
               / (u000D u000A)
 
 # Definition section
-Definition <- CheckId ' '+ '<-' ' '+ Expression 
+
+Definition <- CheckId ' '+ '<-' ' '+ Expression
+Expression <- Sequence (Spacing* '/' ' '* Sequence)*
 
 CheckId    <- ([A-Z] [a-z]+)+
-
-Expression <- Sequence (Spacing* '/' ' '* Sequence)*
 Sequence   <- Rule (Spacing Rule)*
 Rule       <- PosLook / NegLook / Plain
 PosLook    <- '&' Primary Quant?
@@ -41,6 +46,6 @@ Quant      <- Optional / MinZero / MinOne / MinMax / Amount
 Optional   <- '?'
 MinZero    <- '*'
 MinOne     <- '+'
-MinMax     <- '{' numeric ',' numeric '}'
-Amount     <- '{' numeric '}'
+MinMax     <- '{' numeric+ ',' numeric+ '}'
+Amount     <- '{' numeric+ '}'
 

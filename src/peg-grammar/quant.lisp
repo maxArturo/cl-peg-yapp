@@ -16,7 +16,7 @@
           (char-literal #\})))
 #+5am
 (5am:test min-max-amount-test
-          (5am:is (funcall #'min-max-amount
+          (5am:is (min-max-amount
                     (coerce "{83,85}" 'list) 0))
           (5am:is (eq NIL (funcall #'min-max-amount
                             (coerce "{83,999" 'list) 0))))

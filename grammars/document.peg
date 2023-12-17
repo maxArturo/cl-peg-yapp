@@ -3,7 +3,7 @@
 Document <- (Paragraph Endline Endline)+
 Paragraph <- (!Endline Sentence)+ Endline
 
-EndLine     <- LF / CRLF / CR
+EndLine     <- Lf / CrLf / Cr
 
 TextBlock <- Sentence+ TextBlockTerminal
 TextBlockTerminal <- Cr / Lf / (Cr Lf)
