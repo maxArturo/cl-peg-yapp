@@ -16,6 +16,7 @@
             :components
             ((:file "tree")
              (:file "entities")
+             (:file "testing")
              (:file "patterns")))
    (:module "peg-grammar"
             :components

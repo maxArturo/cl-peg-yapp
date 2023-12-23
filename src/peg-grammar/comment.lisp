@@ -23,6 +23,7 @@
                       (funcall #'end-line
                         (coerce "   jigaro" 'list) 0))))
 
+; TODO stop reusing comment line for stuff and separate out bundled spacing
 (defexpr comment-line
          (compose
           (zero-or-more
@@ -56,10 +57,10 @@
                         (coerce "jigaro" 'list) 0))))
 
 ; Spacing <- ComEndLine? SP+
-(defexpr spacing
+(defpattern spacing
          (compose
            (opt-expr #'comment-endline)
-           (one-or-more (char-literal #\SP))))
+           (one-or-more (or-expr (char-literal #\SP) (char-literal #\TAB)))))
 #+5am
 (5am:test spacing-test
   (5am:is

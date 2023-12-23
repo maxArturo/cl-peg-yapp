@@ -42,10 +42,13 @@
   (let*
     ((*peg-entrypoint-definition* nil)
      (grammar (gen-grammar root-node))
-     (expr `(lambda (input)
-              (labels
-                (,@grammar) 
-                (,(intern *peg-entrypoint-definition*) input 0)))))
+     (expr 
+       `(lambda (input-str)
+          (declare (string input-str))
+          (let ((input (coerce input-str 'list)))
+            (labels
+              (,@grammar) 
+              (,(intern *peg-entrypoint-definition*) input 0))))))
     (eval expr)))
 #+nil
 (let ((input (parse #'grammar
@@ -88,10 +91,29 @@ Power   ← Value ('^' Power)?
 Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode definition
-  (let ((children (match-children node)))
-    `(,(gen-check-id (first children)) 
+  (let* ((children (match-children node))
+         (def-symbol
+           (let ((node (first children)))
+             (with-node-literal 
+               (intern 
+                 (format nil "~:@(~a~)" node-literal)
+                 "KEYWORD"))))
+        (def-id (gen-check-id (first children))))
+    `(,def-id
        (input index)
-       (funcall ,(gen-expression (second children)) input index))))
+       (declare (list input) (fixnum index))
+       (let* ((result 
+                (with-caching 
+                  (format nil "~A-~A" ,def-symbol index)
+                  (funcall 
+                    ,(gen-expression (second children)) 
+                    input index)))
+              (result-match 
+                (and result
+                     (new-match 
+                       input index (match-end result) result
+                       ,def-symbol))))
+         (compact-match result-match)))))
 #+nil
 (gen-definition 
     (parse #'definition "AddExpr  <- ('+'/'-') Factor"))
