@@ -5,6 +5,7 @@
 (ql:quickload "fiveam")
 (ql:quickload "cl-peg-yapp")
 (5am:run! 'cl-peg-yapp:peg-suite)
+(interpol:enable-interpol-syntax)
 
 ;; build and test everything
 #+nil

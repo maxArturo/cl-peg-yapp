@@ -47,7 +47,8 @@
    #:string-expr
    #:times
    #:with-caching
-   #:zero-or-more))
+   #:zero-or-more
+   #:test-full-match))
 
 (uiop:define-package 
   #:cl-peg-yapp/peg-grammar
@@ -99,7 +100,7 @@
   (:use #:cl 
    #:cl-peg-yapp/peg-parser 
    #:cl-peg-yapp/peg-grammar)
-  (:export #:gen-grammar))
+  (:export #:generate))
 
 (uiop:define-package 
   #:cl-peg-yapp/peg-scanner

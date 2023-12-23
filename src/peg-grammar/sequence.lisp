@@ -2,6 +2,7 @@
 ;;; in peg grammar.
 
 (in-package #:cl-peg-yapp/peg-grammar)
+(interpol:enable-interpol-syntax)
 
 #+5am
 (5am:def-suite* sequence-suite :in grammar-suite)
@@ -17,14 +18,15 @@
                (zero-or-more #'spacing)
                #'sequence-expr))))
 #+5am
-(5am:test 
- expression-test
- (5am:is (expression
-           (coerce "'+'/'-'" 'list) 0))
- (5am:is (expression
-           (coerce "((alphanum '-' alphanum) / alphanum)" 'list) 0))
- (5am:is (expression
-           (coerce "alphanum / numeric" 'list) 0)))
+(5am:test expression-test
+  (test-full-match #'expression "'+'/'-'")
+  (test-full-match #'expression "((alphanum '-' alphanum) / alphanum)")
+  (test-full-match #'expression "alphanum / numeric")
+  (test-full-match #'expression #?"\
+Modifier* (ClassDeclaration
+			     / EnumDeclaration
+			     / InterfaceDeclaration
+			     / AnnotationTypeDeclaration) / SEMI"))
 
 ; Sequence <- Rule (Spacing Rule)*
 (defexpr sequence-expr
@@ -34,30 +36,23 @@
              (compose
                #'spacing #'rule))))
 #+5am
-(5am:test 
- sequence-expr-test
- (5am:is (funcall #'sequence-expr
-                  (coerce "'+'" 'list) 0))
- (5am:is (sequence-expr
-           (coerce "!']' &'[' " 'list) 0))
- (5am:is (sequence-expr
-           (coerce "!']' ('a'/ 'b')" 'list) 0))
- (5am:is (sequence-expr
-           (coerce "(!numeric/ 'b')" 'list) 0)))
+(5am:test sequence-expr-test
+  (test-full-match #'sequence-expr "'+'" )
+  (test-full-match #'sequence-expr "!']' &'['")
+  (test-full-match #'sequence-expr "!']' ('a'/ 'b')")
+  (test-full-match #'sequence-expr "(!numeric/ 'b')"))
 
 ; CheckId <- (upper lower+)+
 (defexpr check-id
-         (one-or-more 
-           (compose #'upper-case (one-or-more #'lower-case))))
+         (or-expr
+           (one-or-more 
+             (compose #'upper-case (one-or-more #'lower-case)))
+           (one-or-more #'upper-case)))
 #+5am
 (5am:test check-id-test
-  (5am:is (funcall #'check-id
-                   (coerce "AddExpr" 'list) 0))
-  (5am:is (funcall #'check-id
-                   (coerce "Helloworld" 'list) 0))
-  (5am:is (eq NIL
-              (funcall #'check-id
-                       (coerce "helloWorld" 'list) 0))))
+  (test-full-match #'check-id "AddExpr")
+  (test-full-match #'check-id "Helloworld")
+  (test-full-match #'check-id "elloWorld" :other-value nil))
 
 ; Rule <- PosLook / NegLook / Plain
 (defexpr rule
@@ -67,16 +62,10 @@
 (defexpr plain (compose #'primary (opt-expr #'quant)))
 #+5am
 (5am:test plain-test
-  (5am:is (funcall #'plain
-                   (coerce "Helloworld" 'list) 0))
-  (5am:is (funcall #'plain
-                   (coerce "AddExpr*" 'list) 0))
-  (5am:is (eq NIL
-              (funcall #'plain
-                       (coerce "helloWorld" 'list) 0)))
-  (5am:is (eq NIL
-              (funcall #'plain
-                       (coerce "333" 'list) 0))))
+  (test-full-match #'plain "Helloworld")
+  (test-full-match #'plain "AddExpr*")
+  (test-full-match #'plain "helloWorld" :other-value nil) 
+  (test-full-match #'plain "333" :other-value nil))
 
 ; PosLook <- '&' Primary Quant?
 (defexpr pos-look
@@ -104,16 +93,16 @@
              (char-literal #\)))))
 #+5am
 (5am:test primary-test
-  (5am:is (primary
-            (coerce "('+'/'-')" 'list) 0))
-  (5am:is (primary
-            (coerce "(!']' (alphanum '-' alphanum / alphanum) )" 'list) 0)))
+  (test-full-match #'primary "('+'/'-')")
+  (test-full-match #'primary "(!']' (alphanum '-' alphanum / alphanum) )")
+  (test-full-match #'primary "333" :other-value nil))
 
 ; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
 (defexpr definition
          (compose
            #'check-id
-           (one-or-more (char-literal #\SP))
+           (zero-or-more #'end-line)
+           (one-or-more (or-expr (char-literal #\SP) (char-literal #\TAB)))
            (or-expr (string-expr "<-")
                     (char-literal #\LEFTWARDS_ARROW))
            (one-or-more (char-literal #\SP))
@@ -121,23 +110,12 @@
 
 (interpol:enable-interpol-syntax)
 #+5am
-(5am:test 
- scan-def-test
- (5am:is 
-  (definition
-    (coerce "AddExpr  <- ('+'/'-') Factor" 'list) 0))
- (5am:is 
-  (definition
-    (coerce "First <- [a-d]" 'list) 0))
- (5am:is 
-  (eq NIL
-      (definition
-        (coerce "HelloWorld" 'list) 0)))
- (let* ((test-str 
-          (coerce #?"\
-                     Simple <- '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
-          / numeric" 'list))
-          (test-len (length test-str))
-          (res (definition test-str 0)))
-   (5am:is 
-    (eql test-len (match-end res)))))
+(5am:test scan-def-test
+  (test-full-match #'definition "AddExpr  <- ('+'/'-') Factor")
+  (test-full-match #'definition "First <- [a-d]")
+  (test-full-match #'definition "HelloWorld" :other-value nil) 
+  (test-full-match #'definition "" :other-value nil) 
+  (test-full-match #'definition #?"\
+    Simple <- '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
+    / numeric"))
+

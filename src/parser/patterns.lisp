@@ -193,14 +193,13 @@
            (new-match input start index (second results))))))
 #+5am
 (5am:test times-test
-  (5am:is
-   (funcall
-     (times #'any-char 5)
-     (coerce "figar" 'list) 0))
-  (5am:is (eq NIL
-              (funcall
-                (times #'any-char 6)
-                (coerce "figar" 'list) 0))))
+  (test-full-match 
+    (times #'any-char 5)
+    "figar")
+  (test-full-match
+    (times #'any-char 6)
+    "figar"
+    :other-value nil))
 
 (defun min-max-times (expr m n)
   "Applies expr anywhere from m to n times, 

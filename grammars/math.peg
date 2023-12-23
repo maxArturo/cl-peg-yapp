@@ -1,13 +1,9 @@
-# Here is a grammar for basic math
+# Here is a grammar for basic math from wikipedia
 
-Expr     <- Factor AddExpr*
-Factor   <- Primary MulExpr*
-Primary  <- '(' Expr ')'
-          / Number
-          / Variable
-          / '-' Primary
-AddExpr  <- ('+'/'-') Factor
-MulExpr  <- ('*'/'/') Primary
-Number   <- [0-9]+
-Variable <- [A-Za-z]+
+Expr    ← Sum Space*
+Sum     ← Product Space* (('+' / '-') Space* Product)*
+Product ← Power (('*' / '/') Space* Power)* Space*
+Power   ← Value Space* ('^' Power)? Space*
+Space   <- (' ' / u0009)
+Value   ← ([0-9]+) / '(' Expr ')' Space*
 
