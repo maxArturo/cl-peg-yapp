@@ -1,5 +1,5 @@
-;;; This file includes tree representation code for a compacted
-;;; version of the match trees.
+;;; This file includes settings and caching
+;;; for match trees.
 
 (in-package #:cl-peg-yapp/peg-parser)
 

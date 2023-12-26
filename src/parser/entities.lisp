@@ -1,4 +1,4 @@
-;;;; classes used for peg tree representation
+;;;; structs and functions used for peg tree representation
 
 ;;; Note that here, `start` is inclusive and `end` is exclusive.
 ;;; i.e. start is the index where the match begins, and end 

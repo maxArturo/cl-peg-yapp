@@ -6,40 +6,34 @@
 - `src/parser`: functions that represent PEG-based patterns (one or
   more, negative lookup, etc)
 - `src/peg-grammar`: an implementation of a PEG parser using the above
+- `src/generator`: the PEG parser generator which
+  - reads a PEG definition 
+  - builds a lexical function from the grammar `match`
+  - merges it and runs `eval` for end user consumption
+
 
 ## Parser
 
-There are two kinds of nodes
+There are only `match`es for our purpose. They map to traditional
+PEG definitions like so:
 
-- parents
+- parents: `match`es with `:children`
 
-- terminals
+- terminals: `match`es without `:children`
 
 Consider a word. It is composed of one or more of:
 
 - character, e.g. `\[A-Za-z\]`
 - a word terminating char, which won't be consumed
 
-so when you call a parser your output will for sure be a list, maybe
-like this:
+This would be matched for us like so:
 
-'(#\h \#\e \#\y)
+```
+input: "hello!"
 
-Additionally, if you're parsing something that hasn't consumed all the
-input then it should return the remainder. Its all a list of chars
-really. Maybe let's just make it explicit with a plist?
+output:
 
-'(:result NIL :remainder '(...)) '(:result \#S(EXPRESSION :kind :word
-:value '(#\a \#\h)) :remainder '(...))
+#(M :KIND :NIL :START 0000 :END 0005 matched str: >>>| hello |<<<)
 
-also, successful parsings that do not consume input will be represented
-as a list with a single NIL, and the input intact; eg.:
+```
 
-ncall funcall \#'cl-peg-yapp/peg-parser::negative-lookahead (funcall
-'cl-peg-yapp/peg-parser::char-literal \#\i)) coerce "figaro" 'list)) =\>
-(:RESULT (NIL) :REMAINDER (#\f \#\i \#\g \#\a \#\r \#\o)
-
-The way we distinguish empty successful matches is with a symbol of
-:empty-success
-
-RE: the peg implementation
