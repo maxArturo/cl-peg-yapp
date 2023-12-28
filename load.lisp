@@ -4,8 +4,8 @@
 (load "~/quicklisp/setup.lisp")
 (ql:quickload "fiveam")
 (ql:quickload "cl-peg-yapp")
-(5am:run! 'cl-peg-yapp:peg-suite)
 (interpol:enable-interpol-syntax)
+(5am:run! 'cl-peg-yapp:peg-suite)
 
 ;; build and test everything
 #+nil
@@ -27,9 +27,13 @@
 #+nil
 (5am:run! 'cl-peg-yapp:parser-suite)
 #+nil
-(5am:run! 'cl-peg-yapp:peg-suite)
-#+nil
 (5am:run! 'cl-peg-yapp:scanner-suite)
+#+nil
+(5am:run! 'cl-peg-yapp:generator-suite)
+#+nil
+(5am:run! 'cl-peg-yapp:grammar-definition-suite)
+#+nil
+(5am:run! 'cl-peg-yapp:peg-suite)
 #+nil
 (list-all-packages)
 

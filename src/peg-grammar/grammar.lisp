@@ -8,44 +8,67 @@
 #+5am
 (5am:def-suite* full-grammar-suite :in grammar-suite)
 
-; Grammar <- ComEndLine* (Definition ComEndLine*)+
-(defexpr grammar
+; Pattern         <- Exp !.
+(defexpr pattern
          (compose
-           (zero-or-more #'comment-endline)
-           (one-or-more
-             (compose
-               #'definition
-               (zero-or-more #'comment-endline)))))
+           #'expression
+           (negative-lookahead #'any-char)))
 #+5am
-(5am:test grammar-test
-  (test-full-match 
-    #'grammar 
+(5am:test pattern-test
+  (test-full-match
+    #'pattern
     #?"\
-# this is a test grammar
-# it's weird
-# but it's valid
-
 Word <- Letter+ # with comments too!
 Letter <- [A-Za-z]")
-   (test-full-match 
+   (test-input
+     #'pattern
+     #?"\
+Expr    ← 
+  Sum
+
+Sum     ← Product ((u0043 / '-') Product)*
+
+Product ← Power (('*' / '/') Power)*
+
+Power   ← Value ('^' Power)?
+
+Value   ← !'tacos'{1,583}
+          [`0-9]+ 
+          / '(' Expr ')'")
+     (test-full-match #'grammar "HelloWorld" :other-value nil))
+
+; Grammar         <- Definition+
+(defexpr grammar
+         (one-or-more #'definition))
+#+5am
+(5am:test grammar-test
+  (test-full-match
+    #'grammar 
+    #?"\
+Word <- Letter+ # with comments too!
+Letter <- [A-Za-z]")
+   (test-input
      #'grammar 
      #?"\
-# this grammar was taken off of wikipedia.
-# see https://en.wikipedia.org/wiki/Parsing_expression_grammar#Examples
-# for details.
+Expr    ← 
+  Sum
 
-Expr    ← Sum
 Sum     ← Product (('+' / '-') Product)*
+
 Product ← Power (('*' / '/') Power)*
+
 Power   ← Value ('^' Power)?
-Value   ← [0-9]+ / '(' Expr ')'")
+
+Value   ← 
+          [0-9]+ 
+          / '(' Expr ')'")
      (test-full-match #'grammar "HelloWorld" :other-value nil))
 
 #+5am
  (5am:test e2e-test
   (let* ((filenames 
            (mapcar (lambda (f) (enough-namestring f (uiop:getcwd))) 
-                   (directory #p"grammars/*.peg"))))
+                   (directory #p"tests/grammars/*.peg"))))
     (mapcar 
       (lambda (f)
         (let* ((test-grammar-str
@@ -60,3 +83,39 @@ Value   ← [0-9]+ / '(' Expr ')'")
                         ~&Actual: ~a" f test-len actual-len)))) 
                         filenames)))
 
+; Exp             <- Spacing (Alternative / Grammar)
+(defexpr expression
+         (compose
+           #'spacing
+           (or-expr #'alternative #'grammar)))
+#+5am
+(5am:test expression-test
+  (test-input
+     #'expression
+     #?"\
+# This is the main comment area.
+# This could be a useful comment too.
+
+Expr    ← 
+  Sum
+
+Sum     ← Product (('+' / '-') Product)*
+
+Product ← Power (('*' / '/') Power)*
+
+Power   ← Value ('^' Power)?
+
+Value   ← 
+          [0-9]+ 
+          / '(' Expr ')'")
+  (test-full-match #'expression "'+'/'-'")
+  (test-full-match #'expression "((alphanum '-' alphanum) / alphanum)")
+  (test-full-match #'expression "alphanum / numeric")
+  (test-full-match #'expression #?"\
+Modifier* (ClassDeclaration
+			     / EnumDeclaration
+			     / InterfaceDeclaration
+			     / AnnotationTypeDeclaration) / SEMI")
+  (test-full-match #'expression "([_-*] AnySpace){3,} EndLine"))
+
+ 

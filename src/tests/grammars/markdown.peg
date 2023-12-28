@@ -1,0 +1,56 @@
+Markdown <- (Block / Inline)+
+
+# Space defined separately to use UTF char def
+Space  <- ' ' / u0009
+
+Inline <- Strong / 
+          Emphasis /
+          Link /
+          Image /
+          Text
+
+Block <- Heading /
+  List /
+  Blockquote /
+  CodeBlock /
+  HorizontalRule /
+  Paragraph
+
+Strong           <- '**' (!'*' Text)+ '**'
+Emphasis         <- '*' (!'*' Text)+ '*'
+
+HyperlinkText    <- (!']' .)+
+Url              <- (!u0029 .)+ # closing right paren
+Link             <- '[' HyperlinkText '](' Url ')'
+ImageUrl         <- (!(u0029 / u0022) .)+ # closing right paren or quotation mark closes image URL
+ImageDescription <- (!u0022 .)+ # quotation mark
+Image            <- '![' HyperlinkText '](' Url (' \"' ImageDescription '\"')? ')'
+     
+
+Heading <- '#'{1,6} Space (!Space Text)+ (Space* '#'+)? NewLine
+
+List <- (Ordered / Unordered) NewLine
+
+Ordered <- (Space '1.' / 
+            Space '2.' / 
+            Space '3.' / 
+            Space '4.' / 
+            Space '5.' / 
+            Space '6.') Space Text NewLine
+
+Unordered <- Space '-' Space Text NewLine
+
+Blockquote <- '>' Space Text NewLine
+
+CodeContent <- (Space / NewLine / [u0020-u007E])
+CodeBlock <- '```' CodeContent (!'```' CodeContent)+ '```' NewLine
+
+HorizontalRule <- '---' NewLine
+
+Paragraph <- Text NewLine
+
+
+NewLine <- (u0013 u0010) / u0013 / u0010
+BaseChar <- (Space / [A-Za-z0-9])
+Text <- (!NewLine BaseChar)+ # TODO can be further refined
+

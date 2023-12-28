@@ -13,20 +13,25 @@
   ((:file "package")
    (:file "test-suites")
    (:module "parser"
-            :components
-            ((:file "tree")
-             (:file "entities")
-             (:file "testing")
-             (:file "patterns")))
+    :components
+    ((:file "tree")
+     (:file "entities")
+     (:file "testing")
+     (:file "patterns")))
    (:module "peg-grammar"
-            :components
-            ((:file "comment")
-             (:file "quant")
-             (:file "literal")
-             (:file "sequence")
-             (:file "grammar")))
+    :components
+    ((:file "comment")
+     (:file "quant")
+     (:file "literal")
+     (:file "sequence")
+     (:file "grammar")))
    (:module "generator"
-            :components
-            ((:file "generator")))
-   (:file "scanner")))
+    :components
+    ((:file "generator")))
+   (:file "scanner")
+   (:module "tests"
+    :components
+    ((:module "grammars"
+     :components
+     ((:file "grammars")))))))
 

@@ -23,3 +23,8 @@
  :in peg-suite
  :description "Suite for parser generation")
 
+#+5am
+(5am:def-suite grammar-definition-suite
+ :in peg-suite
+ :description "Suite for PEG document specs")
+

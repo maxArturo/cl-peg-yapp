@@ -7,7 +7,7 @@
 (5am:def-suite* comment-suite :in grammar-suite)
 
 ; EndLine <- LF / CRLF / CR
-(defexpr end-line
+(defpattern end-line
          (or-expr
           (compose
            (char-literal #\cr)
@@ -17,58 +17,41 @@
 #+5am
 (5am:test end-line-test
           (5am:is
-           (funcall #'end-line
+           (end-line
              (list #\CR #\LF) 0))
-          (5am:is (eq NIL
-                      (funcall #'end-line
-                        (coerce "   jigaro" 'list) 0))))
+          (5am:is 
+           (eq NIL
+               (test-input #'end-line "   jigaro"))))
 
-; TODO stop reusing comment line for stuff and separate out bundled spacing
-(defexpr comment-line
+; Space <- ' ' / u0009 / Eol
+(defpattern space-expr 
+            (or-expr 
+              (char-literal #\space)
+              (char-literal #\tab)
+              #'end-line))
+
+; Comment         <- ('#' / '//') (!Eol .)* Eol
+(defpattern comment
          (compose
-          (zero-or-more
-           (char-literal #\space))
-          (char-literal #\#)
+          (or-expr 
+            (char-literal #\#)
+            (string-expr "//"))
           (zero-or-more
            (compose
             (negative-lookahead #'end-line)
-            #'any-char))))
+            #'any-char))
+          #'end-line))
 #+5am
-(5am:test comment-line-test
+(5am:test comment-test
           (5am:is
-           (funcall #'comment-line
-             (coerce "   ### jigaro" 'list) 0))
+           (test-input #'comment (format nil "### jigaro~&~&")))
           (5am:is (eq NIL
-                      (funcall #'comment-line
-                        (coerce "jigaro" 'list) 0))))
+                      (test-input #'comment "jigaro"))))
 
-; ComEndLine <- SP* ('# ' Comment)? EndLine
-(defexpr comment-endline
-         (compose
-           (opt-expr #'comment-line)
-           #'end-line))
-#+5am
-(5am:test comment-endline-test
-          (5am:is
-           (funcall 'comment-endline
-             (list #\# #\Newline) 0))
-          (5am:is (eq NIL
-                      (funcall 'comment-endline
-                        (coerce "jigaro" 'list) 0))))
-
-; Spacing <- ComEndLine? SP+
+; Spacing  <- (Space / Comment)*   # Spaces And Comments
 (defpattern spacing
-         (compose
-           (opt-expr #'comment-endline)
-           (one-or-more (or-expr (char-literal #\SP) (char-literal #\TAB)))))
-#+5am
-(5am:test spacing-test
-  (5am:is
-   (funcall #'spacing
-            (list #\SP #\SP) 0))
-  (5am:is
-   (funcall #'spacing
-            (list #\# #\Newline #\SP #\SP) 0))
-  (5am:is (eq NIL
-              (funcall #'spacing
-                       (list #\# #\SP #\SP) 0))))
+            (zero-or-more
+             (or-expr 
+               #'space-expr
+               #'comment)))
+

@@ -20,8 +20,8 @@
           (let 
             ((*peg-node-ancestry* 
                (concatenate 'list
-                 *peg-node-ancestry*
-                 '(,sym))))
+                            *peg-node-ancestry*
+                            '(,sym))))
             ,@body))))))
 
 (defmacro with-node-literal (&body body) 
@@ -38,10 +38,10 @@
           (kind (match-kind child)))
      ,@body))
 
-(defun generate (root-node)
+(defun generate (root-node &key symbols-only)
   (let*
     ((*peg-entrypoint-definition* nil)
-     (grammar (gen-grammar root-node))
+     (grammar (gen-pattern root-node))
      (expr 
        `(lambda (input-str)
           (declare (string input-str))
@@ -49,11 +49,12 @@
             (labels
               (,@grammar) 
               (,(intern *peg-entrypoint-definition*) input 0))))))
-    (eval expr)))
+    (if symbols-only expr
+        (eval expr))))
 #+nil
-(let ((input (parse #'grammar
-              #?"
-     # this grammar was taken off of wikipedia.
+(let ((input (parse #'pattern
+              #?"\
+# this grammar was taken off of wikipedia.
 # see https://en.wikipedia.org/wiki/Parsing_expression_grammar#Examples
 # for details.
 
@@ -65,6 +66,37 @@ Power   ← Value ('^' Power)?
 Value   ← [0-9]+ / '(' Expr ')'")))
 (generate input))
 
+; Pattern         <- Exp !.
+(defnode pattern
+  (with-child 
+    (trivia:ematch kind
+      (:expression (gen-expression child)))))
+
+; Exp             <- Spacing (Alternative / Grammar)
+(defnode expression 
+  (with-child 
+    (trivia:ematch kind
+      (:alternative (gen-alternative child))
+      (:grammar (gen-grammar child)))))
+#+5am
+(5am:test gen-expression-test
+  (5am:is
+   (gen-expression (parse #'expression  "((alphanum '-' alphanum) / alphanum)"))))
+
+; Alternative     <- Seq ('/' Spacing Seq)*
+(defnode alternative
+  (let ((children (match-children node)))
+    (if (eql 1 (length children)) 
+        (with-child 
+          (trivia:ematch kind
+            (:sequence-expr (gen-sequence-expr child))))
+        `(or-expr 
+           ,@(remove-if #'not (mapcar 
+              (lambda (el)
+                (if (eql (match-kind el) :sequence-expr)
+                    (gen-sequence-expr el)))
+              children))))))
+ 
 
 (defnode grammar 
   `(,@(remove-if 
@@ -74,16 +106,10 @@ Value   ← [0-9]+ / '(' Expr ')'")))
         (if (eql (match-kind el) :definition)
             (gen-definition el)))
       (match-children node)))))
-
 #+nil
 (gen-grammar 
   (parse #'grammar
-              #?"
-     # this grammar was taken off of wikipedia.
-# see https://en.wikipedia.org/wiki/Parsing_expression_grammar#Examples
-# for details.
-
-
+              #?"\
 Expr    ← Sum
 Sum     ← Product (('+' / '-') Product)*
 Product ← Power (('*' / '/') Power)*
@@ -91,14 +117,15 @@ Power   ← Value ('^' Power)?
 Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode definition
-  (let* ((children (match-children node))
-         (def-symbol
-           (let ((node (first children)))
-             (with-node-literal 
-               (intern 
-                 (format nil "~:@(~a~)" node-literal)
-                 "KEYWORD"))))
-        (def-id (gen-check-id (first children))))
+  (let* 
+    ((children (match-children node))
+     (def-symbol
+       (let ((node (first children)))
+         (with-node-literal 
+           (intern 
+             (format nil "~:@(~a~)" node-literal)
+             "KEYWORD"))))
+     (def-id (gen-name (first children))))
     `(,def-id
        (input index)
        (declare (list input) (fixnum index))
@@ -118,119 +145,86 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 (gen-definition 
     (parse #'definition "AddExpr  <- ('+'/'-') Factor"))
 
-; Expression <- Sequence (Spacing* '/' SP* Sequence)*
-(defnode expression 
-  (let ((children (match-children node)))
-    (if (eql 1 (length children)) 
-        (if (eql (match-kind (first children)) :sequence-expr)
-            (gen-sequence-expr (first children)))
-        `(or-expr 
-           ,@(remove-if #'not (mapcar 
-              (lambda (el)
-                (if (eql (match-kind el) :sequence-expr)
-                    (gen-sequence-expr el)))
-              children))))))
-#+5am
-(5am:test gen-expression-test
-  (5am:is
-   (gen-expression (parse #'expression  "((alphanum '-' alphanum) / alphanum)"))))
 
-
-; Sequence <- Rule (Spacing Rule)*
+; Seq             <- Prefix+
 (defnode sequence-expr 
   (let 
-    ((rules (remove-if 
-         #'not 
-         (mapcar 
-           (lambda (el)
-             (if (eql (match-kind el) :rule)
-                 (gen-rule el)))
-           (match-children node)))))
+    ((rules
+       (mapcar 
+         (lambda (el)
+           (trivia:ematch el
+             ((match (kind :pos-look))
+              (gen-pos-look el))
+             ((match (kind :neg-look))
+              (gen-neg-look el))
+             ((match (kind :suffix))
+              (gen-suffix el))))
+           (match-children node))))
     `(compose ,@rules)))
      
-; Rule <- PosLook / NegLook / Plain
-(defnode rule
-   (with-child
-    (trivia:ematch kind
-      (:pos-look (gen-pos-look child))
-      (:neg-look (gen-neg-look child))
-      (:plain (gen-plain child)))))
-#+5am
-(5am:test gen-rule-test
-  (5am:is
-   (gen-rule (parse #'rule "('+'/'-'){8,63}")))
-  (5am:is
-   (gen-rule (parse #'rule "('+'/'-')+"))))
-
-; PosLook <- '&' Primary Quant?
-(defnode pos-look
-  (with-child
-    (trivia:ematch kind
-      (:primary
-        `(#'positive-lookahead ,(gen-primary child))))))
-
-; NegLook <- '!' Primary Quant?
-(defnode neg-look
-  (with-child
-    (trivia:ematch kind
-      (:primary
-        `(#'negative-lookahead ,(gen-primary child))))))
-
-; Plain <- Primary Quant?
-(defnode plain
+; Suffix          <- Primary Spacing (Quant Spacing)?
+(defnode suffix
   (let* ((primary (first (match-children node)))
          (quant (second (match-children node)))
          (quant-base (and quant (first (match-children quant))))
          (quant-kind (and quant-base (match-kind quant-base))))
     (trivia:match quant-kind
-      (:optional `(opt-expr ,(gen-primary primary)))
-      (:min-zero `(zero-or-more ,(gen-primary primary)))
-      (:min-one `(one-or-more ,(gen-primary primary)))
-      (:min-max-amount 
-        (let ((min-amt (first (match-children quant-base)))
-              (max-amt (second (match-children quant-base))))
-         `(#'min-max-times 
-           ,(gen-primary primary) 
-           ,(gen-min-amount min-amt)
-           ,(gen-max-amount max-amt))))
-      (:amount `(times ,(gen-primary primary)))
-      (_ (gen-primary primary)))))
-#+5am
-(5am:test gen-plain-test
-  (5am:is
-   (gen-plain (parse #'plain "('+'/'-'){8,63}")))
-  (5am:is
-   (gen-plain (parse #'plain "('+'/'-')+"))))
+       (:optional `(opt-expr ,(gen-primary primary)))
+       (:min-zero `(zero-or-more ,(gen-primary primary)))
+       (:min-one `(one-or-more ,(gen-primary primary)))
+       (:min-max-amount 
+         (let ((min-amt (first (match-children quant-base)))
+               (max-amt (second (match-children quant-base))))
+           `(min-max-times 
+              ,(gen-primary primary) 
+              ,(gen-min-amount min-amt)
+              ,(gen-max-amount max-amt))))
+       (:amount `(times ,(gen-primary primary)))
+       (_ (gen-primary primary)))))
+
+; PosLook    <- '&' Suffix
+(defnode pos-look
+  (with-child 
+    (trivia:ematch kind
+      (:suffix
+        `(positive-lookahead ,(gen-suffix child))))))
+
+; NegLook <- '!' Suffix
+(defnode neg-look
+  (with-child 
+    (trivia:ematch kind
+      (:suffix
+        `(negative-lookahead ,(gen-suffix child))))))
 
 (defnode min-amount
-  (with-node-literal (progn node-literal)))
+  (with-node-literal `,(parse-integer node-literal)))
 #+5am
 (5am:test gen-min-amount-test
   (5am:is 
-   (string= 
-     "83"
+   (eql
+     83
      (gen-min-amount 
        (first 
          (match-children 
            (parse #'min-max-amount "{83,85}")))))))
 
 (defnode max-amount
-  (with-node-literal (progn node-literal)))
+  (with-node-literal `,(parse-integer node-literal)))
 (5am:test gen-min-amount-test
   (5am:is 
-   (string= 
-     "85"
+   (eql
+     85
      (gen-max-amount 
        (second
          (match-children 
            (parse #'min-max-amount "{83,85}")))))))
 
-; Primary <- Simple / CheckId / '(' Expression ')'
+; Primary <- Simple / Name / '(' Expression ')'
 (defnode primary
   (with-child
     (trivia:ematch kind
       (:simple (gen-simple child))
-      (:check-id (gen-check-id child))
+      (:name (gen-name child))
       (:expression (gen-expression child)))))
  #+5am
  (5am:test gen-primary-test
@@ -246,14 +240,14 @@ Value   ← [0-9]+ / '(' Expr ')'"))
      (5am:is (eq NIL 
                  (funcall primary-func (coerce "!" 'list) 0)))))
 
-(defnode check-id 
+(defnode name
   (with-node-literal 
     (let* ((upcase-id (format nil "~:@(~a-def~)" node-literal))
            (def-id (intern upcase-id)))
     (if (not *peg-entrypoint-definition*)
         (setf *peg-entrypoint-definition* 
              upcase-id ))  
-    (if (find :expression *peg-node-ancestry*) 
+    (if (find :alternative *peg-node-ancestry*) 
         `#',def-id
         def-id))))
 
@@ -265,7 +259,8 @@ Value   ← [0-9]+ / '(' Expr ')'"))
       (:string-literal (gen-string-literal child))
       (:alphanum-class (gen-alphanum-class child))
       (:alpha-class (gen-alpha-class child))
-      (:numeric-class (gen-numeric-class child)))))
+      (:numeric-class (gen-numeric-class child))
+      (:wildcard-class (gen-wildcard-class child)))))
 #+5am
 (5am:test gen-simple-test
   (let ((simple-func
@@ -299,8 +294,8 @@ Value   ← [0-9]+ / '(' Expr ')'"))
       ,@(mapcar
           (lambda (child)
             (trivia:ematch child
-              ((match (kind :any-char))
-               (gen-any-char child))
+              ((match (kind :range-char-option))
+               (gen-range-char-option child))
               ((match (kind :char-range-literal))
                (gen-char-range-literal child))))
           (match-children node))))
@@ -316,15 +311,15 @@ Value   ← [0-9]+ / '(' Expr ')'"))
     (5am:is (funcall da-funk (coerce "SIX" 'list) 0))
     (5am:is (funcall da-funk (coerce "`IX" 'list) 0))))
 
-(defnode any-char
+(defnode range-char-option
   (with-node-literal 
   `(char-literal ,(char node-literal 0))))
 #+5am
-(5am:test any-char-test
+(5am:test range-char-option-test
   (5am:is 
    (funcall 
      (eval 
-       (gen-any-char (parse #'any-char "`00A")))
+       (gen-range-char-option (parse #'range-char-option "`00A")))
      (coerce "`[A-Z]" 'list) 0)))
 
 (defnode alphanum-class
@@ -361,6 +356,23 @@ Value   ← [0-9]+ / '(' Expr ')'"))
               (gen-alpha-class
                 (parse #'alpha-class "alpha")))
             (coerce "38" 'list) 0))))
+
+(defnode wildcard-class
+  `(or-expr #'any-char))
+#+5am
+(5am:test wildcard-class-test
+  (5am:is (test-input 
+            (eval 
+              (gen-wildcard-class
+                (parse #'wildcard-class ".")))
+            "a38"))
+  (5am:is 
+   (eq NIL 
+       (test-input 
+            (eval 
+              (gen-wildcard-class
+                (parse #'wildcard-class "."))) 
+            ""))))
 
 (defnode numeric-class
   `(char-range #\0 #\9))

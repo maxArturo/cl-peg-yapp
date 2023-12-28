@@ -1,0 +1,62 @@
+Pattern         <- Exp !.
+Exp             <- Spacing (Alternative / Grammar)
+
+Alternative     <- Seq ('/' Spacing Seq)*
+Seq             <- Prefix+
+Prefix          <- PosLook / NegLook / Suffix
+PosLook    <- '&' Suffix
+NegLook    <- '!' Suffix
+Suffix          <- Primary Spacing (Quant Spacing)?
+
+Quant      <- Optional / MinZero / MinOne / MinMax / Amount
+Optional   <- '?'
+MinZero    <- '*'
+MinOne     <- '+'
+MinMax     <- '{' Num ',' Num '}'
+Amount     <- '{' Num '}'
+
+
+Primary         <- '(' Exp ')' / Simple
+                # / Class 
+                # / Defined
+                # / '{:' (Name ':')? Exp ':}'
+                # / '=' Name
+                # / '{*' Exp '*}' # Bare Capture
+                # / '{~' Exp '~}' # Substitution Capture
+                # / '{|' Exp '|}' # Table Capture
+                # / '{+' Exp '+}' # Memoization Expression
+                # / '{' Exp '}'   # String Capture
+                 / '.'
+                 / Name Spacing !Arrow
+
+Grammar         <- Definition+
+Definition      <- Name Spacing Arrow Exp
+
+# Class           <- '[' '^'? Item (!']' Item)* ']'
+# Item            <- Defined / Range / .
+# Range           <- . '-' (!']' .)
+
+# Literals 
+Name            <- [A-Za-z][A-Za-z0-9_]*
+Arrow           <- '<-'
+Num             <- [0-9]+
+String          <- (u0039 (!u0039 .)* u0039) 
+                /  '"' (!'"' .)* '"'
+
+Unicode         <- 'u' ('10' Uphex{4} / Uphex{4,5})
+Uphex           <- [0-9A-F]
+Range <- '[' (!']' ((. '-' .) / .))+ ']'
+
+Simple          <- Unicode / String / Range
+
+# Defined         <- '%' Name
+
+# Spacing 
+
+Spacing         <- (Space / Comment)*
+Comment         <- ('#' / '//') (!Eol .)* Eol
+Space           <- ' ' / u0009 / Eol
+Eol             <-   u000D         # CR
+                   / u000A         # LF
+                   / (u000D u000A)
+
