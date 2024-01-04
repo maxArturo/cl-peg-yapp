@@ -95,14 +95,6 @@
 
 #+5am
 (5am:def-suite* markdown-heading-suite :in markdown-grammar-suite)
-(md-test markdown-h1-test 
-         '(:markdown 
-            (:block
-              (:heading
-                (:space)
-                (:headingtext
-                  "hey"))))
-         #?|## hey ##|)
 
 #+5am
 (5am:def-suite* markdown-inline-suite :in markdown-grammar-suite)

@@ -4,4 +4,6 @@ Session.vim
 .vscode/alive/fasl/*.lisp
 *.fasl
 .vscode
+.clj-kondo
+.lsp
 

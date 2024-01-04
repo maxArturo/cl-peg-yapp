@@ -1,5 +1,7 @@
 # cl-peg-yapp
 
+[![CI/testing](https://github.com/maxArturo/cl-peg-yapp/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/maxArturo/cl-peg-yapp/actions/workflows/main.yml)
+
 > *Stands for "yet another PEG parser".*
 
 This is a hand-rolled implementation of a [PEG](https://bford.info/packrat/) 
