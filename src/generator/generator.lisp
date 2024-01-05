@@ -145,7 +145,6 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 (gen-definition 
     (parse #'definition "AddExpr  <- ('+'/'-') Factor"))
 
-
 ; Seq             <- Prefix+
 (defnode sequence-expr 
   (let 
@@ -286,7 +285,12 @@ Value   ← [0-9]+ / '(' Expr ')'"))
   (5am:is
    (funcall 
      (eval 
-       (gen-unicode (parse #'unicode #?"u007A")))
+       (gen-unicode (parse #'unicode "u000A")))
+     '(#\Newline) 0))
+  (5am:is
+   (funcall 
+     (eval 
+       (gen-unicode (parse #'unicode "u007A")))
      (coerce "zunky" 'list) 0)))
 
 (defnode range-expr

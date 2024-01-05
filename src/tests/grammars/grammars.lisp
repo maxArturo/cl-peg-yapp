@@ -17,7 +17,7 @@
 
 (defparameter *md-foundation* 
   #?"\
-     \nNewLine <- (u0013 u0010) / u0013 / u0010
+     \nNewLine <- (u000D u000A) / u000D / u000A
      \n# Space defined separately to use UTF char def
      \nSpace <- ' ' / u0009
      \nText <- (!NewLine .)+ # TODO can be further refined")
@@ -55,8 +55,8 @@
               \n# \ HorizontalRule /
               \n# \ Paragraph
 
-     \nHeadingText <- (!(Space* '#') .)+
-     \nHeading <- '#'{1,6} Space HeadingText (!Newline .)* NewLine
+     \nHeadingText <- (!(NewLine / '#') .)+
+     \nHeading <- '#'{1,6} Space HeadingText NewLine
 
      \nList <- (Ordered / Unordered) NewLine
 
@@ -84,7 +84,8 @@
   ;    \n${*md-inline*}
   ;    \n${*md-foundation*}\n"
   #?"\
-     Markdown <- Block / Inline\n
+     Markdown <- Block\n
+     / Inline\n
      \n${*md-inline*}
      \n${*md-block*}
      \n${*md-foundation*}\n"
@@ -97,7 +98,38 @@
 (5am:def-suite* markdown-heading-suite :in markdown-grammar-suite)
 
 #+5am
+(md-test markdown-h1-test 
+         '(:markdown 
+            (:block
+              (:heading
+                (:space)
+                (:headingtext
+                  "my h1 heading")
+                (:newline))))
+         #?"# my h1 heading\n")
+
+;TODO fix the repeat pattern for generators
+; in min-max under primary
+#+nil
+(md-test markdown-h6-test 
+         '(:markdown 
+            (:block
+              (:heading
+                (:space)
+                (:headingtext
+                  "my h1 heading!!i!#")
+                (:newline))))
+         #?"###### my h1 heading!!i!#\n")
+#+nil
+(funcall
+  (generate 
+    (parse #'pattern *md-grammar*))
+  #?"## my h1 
+     ")
+ 
+#+5am
 (5am:def-suite* markdown-inline-suite :in markdown-grammar-suite)
+
 #+5am
 (md-test markdown-link-test 
          '(:markdown 
@@ -108,6 +140,7 @@
                 (:url
                   "https://www.wikipedia.org/image.png"))))
          #?|[here's an image link](https://www.wikipedia.org/image.png)|)
+
 #+5am
 (md-test markdown-image-test
          '(:markdown 
@@ -126,6 +159,8 @@
             (:inline
               (:text "Heyyall")))
          #?|Heyyall|)
+
+
 #+5am
 (md-test markdown-strong-test
          '(:markdown 
@@ -142,9 +177,4 @@
                 (:innertext
                   "Heyyall, it's ya boy!! I think..   "))))
          #?|*Heyyall, it's ya boy!! I think..   *|)
-#+nil
-(funcall
-        (generate 
-          (parse #'pattern *md-grammar*))
-#?|**Heyyall, its ya boy!!! I think... **|)
- 
+

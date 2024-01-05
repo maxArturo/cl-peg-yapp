@@ -76,6 +76,9 @@
 #+5am
 (5am:test char-literal-test
   (5am:is
+   (funcall (char-literal #\Newline)
+            '(#\Newline) 0))
+  (5am:is
    (funcall (char-literal #\f)
             (coerce "funky" 'list) 0))
   (5am:is

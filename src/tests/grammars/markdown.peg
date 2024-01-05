@@ -50,7 +50,11 @@ HorizontalRule <- '---' NewLine
 Paragraph <- Text NewLine
 
 
-NewLine <- (u0013 u0010) / u0013 / u0010
+
+NewLine <-   u000D         # CR
+            / u000A         # LF
+            / (u000D u000A)
+
 BaseChar <- (Space / [A-Za-z0-9])
 Text <- (!NewLine BaseChar)+ # TODO can be further refined
 
