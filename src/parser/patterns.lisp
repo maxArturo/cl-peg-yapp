@@ -53,7 +53,7 @@
         (start i)
         (end (+ i 1)))
     (and (characterp curr)
-         (new-match input start end nil :any-char))))
+         (new-match input start end nil))))
 #+5am
 (5am:test any-char-test
   (5am:is
@@ -258,19 +258,7 @@
   (5am:is 
    (equalp 
      (new-match 
-       (coerce "hello" 'list) 0 5 
-       (list
-         (new-match 
-           (coerce "hello" 'list) 0 1 nil :any-char)
-         (new-match 
-           (coerce "hello" 'list) 1 2 nil :any-char)
-         (new-match 
-           (coerce "hello" 'list) 2 3 nil :any-char)
-         (new-match 
-           (coerce "hello" 'list) 3 4 nil :any-char)
-         (new-match 
-           (coerce "hello" 'list) 4 5 nil :any-char)
-         ))
+       (coerce "hello" 'list) 0 5)
      (funcall
        (zero-or-more
          #'any-char)

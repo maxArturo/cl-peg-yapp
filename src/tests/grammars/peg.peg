@@ -17,7 +17,6 @@
 
 Grammar    <- ComEndLine* (Definition ComEndLine*)+
 
-
 ComEndLine <- ' '* ('# ' Comment)? EndLine
 Comment    <- (!EndLine alphanum)+
 Spacing    <- ComEndLine? ' '+

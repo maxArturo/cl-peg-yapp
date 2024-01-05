@@ -12,20 +12,19 @@
           (char-literal #\{)
           (one-or-more #'min-amount)
           (char-literal #\,)
-          (one-or-more #'max-amount)
+          (zero-or-more #'max-amount)
           (char-literal #\})))
 #+5am
 (5am:test min-max-amount-test
-          (5am:is (min-max-amount
-                    (coerce "{83,85}" 'list) 0))
-          (5am:is (eq NIL (funcall #'min-max-amount
-                            (coerce "{83,999" 'list) 0))))
+  (test-full-match #'min-max-amount "{83,85}")
+  (test-full-match #'min-max-amount "{83,999" :other-value nil)
+  (test-full-match #'min-max-amount "{83,}"))
 
 ;Amount      <- '{' Count '}'
 (defexpr amount
          (compose
           (char-literal #\{)
-          (one-or-more 'digit)
+          (one-or-more #'digit)
           (char-literal #\})))
 #+5am
 (5am:test amount-test
@@ -61,6 +60,7 @@
           (5am:is (eq NIL (funcall #'min-one
                             (coerce "!buthwy" 'list) 0))))
 
+; Quant      <- Optional / MinZero / MinOne / MinMax / Amount
 (defexpr quant
          (or-expr
           #'optional

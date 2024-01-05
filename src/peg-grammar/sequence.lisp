@@ -7,34 +7,9 @@
 #+5am
 (5am:def-suite* sequence-suite :in grammar-suite)
 
-; Expression <- Sequence (Spacing* '/' SP* Sequence)* Spacing*
-(defexpr expression
-         (compose
-           #'sequence-expr
-           (zero-or-more 
-             (compose
-               (zero-or-more #'spacing)
-               (char-literal #\/)
-               (zero-or-more #'spacing)
-               #'sequence-expr))))
-#+5am
-(5am:test expression-test
-  (test-full-match #'expression "'+'/'-'")
-  (test-full-match #'expression "((alphanum '-' alphanum) / alphanum)")
-  (test-full-match #'expression "alphanum / numeric")
-  (test-full-match #'expression #?"\
-Modifier* (ClassDeclaration
-			     / EnumDeclaration
-			     / InterfaceDeclaration
-			     / AnnotationTypeDeclaration) / SEMI"))
-
-; Sequence <- Rule (Spacing Rule)*
+; Seq             <- Prefix*
 (defexpr sequence-expr
-         (compose
-           #'rule
-           (zero-or-more 
-             (compose
-               #'spacing #'rule))))
+         (one-or-more #'prefix))
 #+5am
 (5am:test sequence-expr-test
   (test-full-match #'sequence-expr "'+'" )
@@ -42,70 +17,64 @@ Modifier* (ClassDeclaration
   (test-full-match #'sequence-expr "!']' ('a'/ 'b')")
   (test-full-match #'sequence-expr "(!numeric/ 'b')"))
 
-; CheckId <- (upper lower+)+
-(defexpr check-id
-         (or-expr
-           (one-or-more 
-             (compose #'upper-case (one-or-more #'lower-case)))
-           (one-or-more #'upper-case)))
-#+5am
-(5am:test check-id-test
-  (test-full-match #'check-id "AddExpr")
-  (test-full-match #'check-id "Helloworld")
-  (test-full-match #'check-id "elloWorld" :other-value nil))
+; Prefix          <- PosLook / NegLook / Suffix
+(defpattern prefix
+         (or-expr 
+           #'pos-look
+           #'neg-look
+           #'suffix))
 
-; Rule <- PosLook / NegLook / Plain
-(defexpr rule
-         (or-expr #'pos-look #'neg-look #'plain))
-
-; Plain <- Primary Quant?
-(defexpr plain (compose #'primary (opt-expr #'quant)))
-#+5am
-(5am:test plain-test
-  (test-full-match #'plain "Helloworld")
-  (test-full-match #'plain "AddExpr*")
-  (test-full-match #'plain "helloWorld" :other-value nil) 
-  (test-full-match #'plain "333" :other-value nil))
-
-; PosLook <- '&' Primary Quant?
+;PosLook    <- '&' Suffix
 (defexpr pos-look
-         (compose (char-literal #\&) #'primary
-                  (opt-expr #'quant)))
+         (compose (char-literal #\&) #'suffix))
 
-; NegLook <- '!' Primary Quant?
+; NegLook    <- '!' Suffix
 (defexpr neg-look
-         (compose (char-literal #\!) #'primary
-                  (opt-expr #'quant)))
+         (compose (char-literal #\!) #'suffix))
 (5am:test 
  neg-look-test
  (5am:is (neg-look
            (coerce "!']'" 'list) 0)))
 
-; Primary <- Simple / CheckId / '(' Expression ')'
+
+; Suffix          <- Primary Spacing (Quant Spacing)?
+(defexpr suffix
+         (compose
+           #'primary
+           #'spacing
+           (opt-expr (compose #'quant #'spacing))))
+
+; Primary         <- '(' Exp ')'
+;                  / Simple
+;                  / '.'
+;                  / Name Spacing !Arrow
 (defexpr primary
          (or-expr
-           #'simple #'check-id
            (compose
              (char-literal #\()
-             (zero-or-more (char-literal #\SP))
              #'expression
-             (zero-or-more (char-literal #\SP))
-             (char-literal #\)))))
+             (char-literal #\)))
+           #'simple
+           (char-literal #\.)
+           (compose
+             #'name
+             #'spacing
+             (negative-lookahead #'arrow))))
 #+5am
 (5am:test primary-test
-  (test-full-match #'primary "('+'/'-')")
-  (test-full-match #'primary "(!']' (alphanum '-' alphanum / alphanum) )")
+  (test-full-match #'primary ".")
+  (test-full-match #'primary "URL")
+  (test-input
+    (compose #'name #'spacing) "URL")
+  (test-full-match #'primary "'333'")
   (test-full-match #'primary "333" :other-value nil))
 
-; ScanDef <- CheckId SP+ '<-'  SP+ Expression 
+; Definition      <- Name Spacing Arrow Exp
 (defexpr definition
          (compose
-           #'check-id
-           (zero-or-more #'end-line)
-           (one-or-more (or-expr (char-literal #\SP) (char-literal #\TAB)))
-           (or-expr (string-expr "<-")
-                    (char-literal #\LEFTWARDS_ARROW))
-           (one-or-more (char-literal #\SP))
+           #'name
+           #'spacing
+           #'arrow
            #'expression))
 
 (interpol:enable-interpol-syntax)
@@ -119,3 +88,12 @@ Modifier* (ClassDeclaration
     Simple <- '[' (!']' (alphanum '-' alphanum / alphanum) )+ ']'
     / numeric"))
 
+; Alternative     <- Seq ('/' Spacing Seq)*
+(defexpr alternative 
+         (compose
+           #'sequence-expr
+           (zero-or-more 
+             (compose
+               (char-literal #\/)
+               #'spacing
+               #'sequence-expr))))

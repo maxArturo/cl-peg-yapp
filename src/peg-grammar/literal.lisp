@@ -6,25 +6,32 @@
 #+5am
 (5am:def-suite* literal-suite :in grammar-suite)
 
+(defpattern arrow
+            (or-expr (string-expr "<-")
+                     (char-literal #\LEFTWARDS_ARROW)))
+#+5am
+(5am:test arrow-test
+          (5am:is
+           (test-input #'arrow "<-"))
+          (5am:is 
+           (eq NIL
+               (test-input #'arrow "--"))))
+
 (defpattern upper-case (char-range #\A #\Z))
 #+5am
 (5am:test upper-case-test
           (5am:is
-           (funcall #'upper-case
-             (coerce "First" 'list) 0))
+           (test-input #'upper-case "First"))
           (5am:is (eq NIL
-                      (funcall 'upper-case
-                        (coerce "jigaro" 'list) 0))))
+                      (test-input #'upper-case "jigaro"))))
 
 (defpattern lower-case (char-range #\a #\z))
 #+5am
 (5am:test lower-case-test
           (5am:is
-           (funcall 'lower-case
-             (coerce "first" 'list) 0))
+           (test-input #'lower-case "first"))
           (5am:is (eq NIL
-                      (funcall 'lower-case
-                        (coerce "Jigaro" 'list) 0))))
+           (test-input #'lower-case "Jigaro"))))
 
 ; represents a single-quoted string, e.g. 'hello'
 (defexpr string-literal
@@ -40,13 +47,10 @@
 #+5am
 (5am:test string-literal-test
           (5am:is
-           (funcall
-               'string-literal
-             (coerce "'something'" 'list) 0))
+           (test-input #'string-literal "'something'"))
           (5am:is (eq NIL
-                      (funcall
-                          'string-literal
-                        (coerce "'33DaThing" 'list) 0))))
+                      (test-input #'string-literal "33Dathing'"))))
+
 ; parses a literal range of chars, e.g. 'a-z' or 
 ; '0-9'. Ranges must have a dash and must not start
 ; with a dash.
@@ -59,31 +63,25 @@
           #'any-char))
 #+5am
 (5am:test char-range-literal-test
-          (5am:is
-           (char-range-literal
-             (coerce "a-zforeva" 'list) 0))
-          (5am:is (eq NIL
-                      (funcall
-                          'char-range-literal
-                        (coerce "a--zforeva" 'list) 0)))
-          (5am:is (eq NIL
-                      (funcall
-                          'char-range-literal
-                        (coerce "-a--zforeva" 'list) 0))))
+  (5am:is
+   (test-input #'char-range-literal "a-zforeva"))
+  (5am:is 
+   (eq NIL
+       (test-input #'char-range-literal "a--zforeva")))
+  (5am:is (eq NIL
+              (test-input #'char-range-literal "-a--zforeva"))))
 
 (defpattern digit (char-range #\0 #\9))
 #+5am
 (5am:test digit-test
-          (5am:is
-           (funcall 'digit
-             (coerce "0bacon" 'list) 0))
-          (5am:is (eq NIL
-                      (funcall 'digit
-                        (coerce "oneBacon" 'list) 0))))
+  (5am:is 
+   (test-input #'digit "0bacon"))
+  (5am:is (eq NIL
+              (test-input #'digit "onebacon"))))
 
 ; specialized digit expr for parsing purposes
-(defexpr min-amount (one-or-more (char-range #\0 #\9)))
-(defexpr max-amount (one-or-more (char-range #\0 #\9)))
+(defexpr min-amount (one-or-more #'digit))
+(defexpr max-amount (one-or-more #'digit))
 
 ; parses upper-case hex letters and digits
 (defpattern uphex
@@ -92,12 +90,9 @@
           (char-range #\0 #\9)))
 #+5am
 (5am:test uphex-test
-          (5am:is (funcall 'uphex
-                    (coerce "56CAFE" 'list) 0))
-          (5am:is (funcall 'uphex
-                    (coerce "CAFE" 'list) 0))
-          (5am:is (eq NIL (funcall 'uphex
-                            (coerce "hunky" 'list) 0))))
+  (5am:is (test-input #'uphex "56CAFE"))
+  (5am:is (test-input #'uphex "CAFE"))
+  (5am:is (eq NIL (test-input #'uphex "hunAFE"))))
 
 ; Unicode <- 'u' ('10' uphex{4} / uphex{4,5})
 (defexpr unicode
@@ -109,23 +104,27 @@
                    (or-expr (times 'uphex 5) (times 'uphex 4)))))
 #+5am
 (5am:test unicode-test
-          (5am:is (funcall 'unicode
-                    (coerce "u10AAFFforyou" 'list) 0))
+          (5am:is (test-input #'unicode "u10AAFFforyou"))
           ; unicode latin block start
-          (5am:is (funcall 'unicode
-                    (coerce "u0000" 'list) 0))
+          (5am:is (test-input #'unicode "u0000"))
           ; unicode latin block end
-          (5am:is (funcall 'unicode
-                    (coerce "u007F" 'list) 0))
-          (5am:is (funcall 'unicode
-                    (coerce "uFEFECEC" 'list) 0))
-          (5am:is (eq NIL (funcall 'unicode
-                            (coerce "CAFE" 'list) 0)))
-          (5am:is (eq NIL (funcall 'unicode
-                            (coerce "uCAF" 'list) 0))))
+          (5am:is (test-input #'unicode "u007F"))
+          (5am:is (test-input #'unicode "uFEFECEC"))
+          (5am:is (eq NIL 
+                      (test-input #'unicode "CAFE")))
+          (5am:is (eq NIL 
+                      (test-input #'unicode "uCAF"))))
+
+(defexpr range-char-option
+         #'any-char)
+#+5am
+(5am:test range-char-option-test
+  (5am:is
+   (test-input #'range-char-option "`_")))
 
 ; Parses against a regex-style set of char options,
 ; including ranges, e.g. [A-Za-z0-9] 
+; Range <- '[' (!']' ((. '-' .) / .))+ ']'
 (defexpr range-expr
          (compose
           (char-literal #\[)
@@ -133,8 +132,8 @@
            (compose
             (negative-lookahead (char-literal #\]))
             (or-expr
-             #'char-range-literal
-             #'any-char)))
+              #'char-range-literal
+              #'range-char-option)))
           (char-literal #\])))
 #+5am
 (5am:test range-expr-test
@@ -160,6 +159,7 @@
            'alphanum-class
            'alpha-class
            'numeric-class
+           'wildcard-class
            ))
 #+5am
 (5am:test 
@@ -179,6 +179,20 @@
                'simple
                (coerce "[]|`A-Za-z0-9_" 'list) 0))))
 
+; Name            <- [A-Za-z][A-Za-z0-9_]*
+(defexpr name
+         (compose
+           (or-expr #'upper-case #'lower-case)
+           (zero-or-more 
+             (or-expr #'upper-case 
+                      #'lower-case
+                      #'digit))))
+#+5am
+(5am:test name-test
+  (5am:is (test-full-match #'name "URL"))
+  (5am:is (test-full-match #'name "Url"))
+  (5am:is (test-full-match #'name "UrlName")))
+
 ;; All of these definitions parse 
 ;; the literal that represents a particular character
 ;; class. It's up to the parser to actually do something
@@ -195,3 +209,7 @@
 
 (defexpr alphanum-class
          (string-expr "alphanum"))
+
+(defexpr wildcard-class
+         (string-expr "."))
+
