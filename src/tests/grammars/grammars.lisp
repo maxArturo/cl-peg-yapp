@@ -136,7 +136,7 @@
   (h6-test
     (:heading
       (:space)
-      (:text "some heading!!1! ###")
+      (:text "some heading!!!1! ###")
       (:newline))
     #?"###### some heading!!!1! ###\n")
   )
@@ -151,8 +151,7 @@
     (GENERATE
       (PARSE #'PATTERN
              #?"${*md-heading*}\n${*md-foundation*}"))
-    #?"## some heading\n"
-    ))
+    #?"## some heading\n"))
 
 
 (defparameter *md-block*

@@ -216,10 +216,11 @@
        (min-res (funcall (times expr m) input index))
        (max-res 
          (and min-res
-              (funcall (times expr n) 
+              (funcall (zero-or-more expr)
                        input 
                        (match-end min-res)))))
       (and min-res
+           (if max-res (<= (match-end max-res) n) t)
            (new-match 
              input start 
              (match-end (or max-res min-res)) 
@@ -229,9 +230,19 @@
 #+5am
 (5am:test min-max-times-test
   (5am:is
+   (eq NIL
+       (funcall
+         (min-max-times (string-expr "#") 1 6)
+         (coerce " my man"'list) 0)))
+  (5am:is
    (funcall
-     (min-max-times #'any-char 3 5)
-     (coerce "figarlicious" 'list) 0))
+     (min-max-times (string-expr "#") 1 6)
+     (coerce "# my man"'list) 0))
+  (5am:is
+   (eq NIL
+       (funcall
+         (min-max-times (string-expr "#") 1 6)
+         (coerce "####### my man"'list) 0)))
   (5am:is (eq NIL
               (funcall
                 (min-max-times #'any-char 8 9)
