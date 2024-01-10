@@ -138,48 +138,106 @@
       (:space)
       (:text "some heading!!!1! ###")
       (:newline))
-    #?"###### some heading!!!1! ###\n")
-  )
-
-#+nil
-(TEST-MATCH-LITERAL 
-  '(:heading
-     (:space)
-     (:text "some heading!!1! ###")
-     (:newline))
-  (FUNCALL
-    (GENERATE
-      (PARSE #'PATTERN
-             #?"${*md-heading*}\n${*md-foundation*}"))
-    #?"## some heading\n"))
+    #?"###### some heading!!!1! ###\n"))
 
 
-(defparameter *md-block*
-     #?|\
-     Block <- Heading\n
-              \n# \ List / 
-              \n# \ Blockquote /
-              \n# \ CodeBlock /
-              \n# \ HorizontalRule /
-              \n# \ Paragraph
 
-     \n${*md-heading*}
-
-     \nList <- (Ordered / Unordered) NewLine
+(defparameter *md-list* 
+  #?"\nList <- (Ordered / Unordered) NewLine
 
      \nOrdered <- (Space '1.' / 
                        \nSpace '2.' / 
                        \nSpace '3.' / 
                        \nSpace '4.' / 
                        \nSpace '5.' / 
-                       \nSpace '6.') Space Text NewLine
+                       \nSpace '6.') Space Text
 
-     \nUnordered <- Space '-' Space Text NewLine
+     \nUnordered <- Space '-' Space Text\n")
+    
+#+5am
+(5am:def-suite* markdown-list-suite :in markdown-grammar-suite)
 
-     \nBlockquote <- '>' Space Text NewLine
+#+5am
+(with-grammar-def 
+  #?"${*md-list*}\n${*md-foundation*}"
+  (unordered-test
+    (:list
+      (:unordered
+        (:space)
+        (:space)
+        (:text "my first list"))
+      (:newline))
+    #?" - my first list\n")
+  (ordered-test-1
+    (:list
+      (:ordered
+        (:space)
+        (:space)
+        (:text "my first list"))
+      (:newline))
+    #?" 1. my first list\n")
+  (ordered-test-6
+    (:list
+      (:ordered
+        (:space)
+        (:space)
+        (:text "my last list"))
+      (:newline))
+    #?" 6. my last list\n")
+  )
 
-     \nCodeContent <- (Space / NewLine / [u0020-u007E])
-     \nCodeBlock <- '```' CodeContent (!'```' CodeContent)+ '```' NewLine
+(defparameter *md-blockquote* #?"\nBlockquote <- '>' Space Text NewLine \n")
+#+5am
+(5am:def-suite* markdown-blockquote-suite :in markdown-grammar-suite)
+
+#+5am
+(with-grammar-def 
+  #?"${*md-blockquote*}\n${*md-foundation*}"
+  (blockquote-test
+    (:blockquote
+      (:space)
+      (:text "some quote man... ")
+      (:newline))
+    #?"> some quote man... \n"))
+
+(defparameter *md-codeblock*
+  #?"\
+     CodeBlock <- '```' NewLine CodeContent NewLine '```' NewLine
+     \nCodeContent <- (!(NewLine '```') .)+\n")
+#+5am
+(5am:def-suite* markdown-codeblock-suite :in markdown-grammar-suite)
+
+#+5am
+(with-grammar-def 
+  #?"${*md-codeblock*}\n${*md-foundation*}"
+  (basic-codecontent-test
+    (:codeblock
+      (:newline)
+      (:codecontent
+        "(defun foo (bar) (print bar))")
+      (:newline)
+      (:newline))
+    #?"```\n(defun foo (bar) (print bar))\n```\n"))
+
+#+nil
+(TEST-MATCH-LITERAL 
+  '(:codeblock
+      (:codecontent
+        "(defun foo (bar) (print bar))")
+      (:newline))
+  (FUNCALL
+    (GENERATE
+      (PARSE #'PATTERN
+             #?"${*md-code*}\n${*md-foundation*}"))
+    #?" 1. my first list \n"))
+(defparameter *md-block*
+     #?|\
+     Block <- ${*md-heading*}\n
+              \n${*md-list*} / 
+              \n${*md-blockquote*} /
+              \n${*md-codeblock*} /
+              \n# \ HorizontalRule /
+              \n# \ Paragraph
 
      \nHorizontalRule <- '---' NewLine
 

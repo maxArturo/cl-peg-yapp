@@ -10,7 +10,7 @@
 ;; build and test everything
 #+nil
 (progn 
-  (ql:quickload "trivia")
+  (ql:quickload "trivia") 
   (ql:quickload "cl-ppcre")
   (ql:quickload "for")
   (ql:quickload "cl-interpol")
