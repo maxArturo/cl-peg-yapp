@@ -1,26 +1,56 @@
 (in-package #:cl-peg-yapp/peg-definition-tests)
 
 (interpol:enable-interpol-syntax)
+
 #+5am
 (5am:def-suite* markdown-grammar-suite :in grammar-definition-suite)
 
-(defmacro md-test (test-name test-obj test-str)
-  `(5am:test ,test-name
-    (5am:is 
-     (test-match-literal 
-       ,test-obj
-       (funcall
-         (generate 
-           (parse #'pattern *md-grammar*))
-         ,test-str)))))
+(defmacro with-grammar-def (grammar-def &body body)
+  `(progn 
+     ,@(mapcar 
+         (lambda (el)
+           `(5am:test ,(first el)
+              (5am:is 
+               (test-match-literal 
+                 ',(second el)
+                 (funcall 
+                   (generate (parse #'pattern ,grammar-def))
+                   ,(third el)))
+               )))
+         body)))
 
+(defmacro md-test (test-name test-obj test-str grammar-definition)
+ `(5am:test ,test-name
+     (let ((grammar ,grammar-definition))
+       (5am:is 
+        (test-match-literal 
+          ,test-obj
+          (funcall
+            (generate 
+              (parse #'pattern grammar))
+            ,test-str))))))
 
-(defparameter *md-foundation* 
+(defparameter *md-spacing*
   #?"\
      \nNewLine <- (u000D u000A) / u000D / u000A
      \n# Space defined separately to use UTF char def
-     \nSpace <- ' ' / u0009
-     \nText <- (!NewLine .)+ # TODO can be further refined")
+     \nSpace <- ' ' / u0009")
+#+5am
+(5am:def-suite* markdown-spacing-suite :in markdown-grammar-suite)
+
+#+5am
+(5am:test newline-test 
+  (5am:is (test-match-literal 
+            '(:newline)
+            (funcall
+              (generate 
+                (parse #'pattern *md-spacing*))
+              (coerce '(#\Newline) 'string)))))
+ 
+(defparameter *md-foundation* 
+  #?"\
+     Text <- (!NewLine .)+ # TODO can be further refined
+     \n${*md-spacing*}\n")
 
 (defparameter *md-inline*
      #?|\
@@ -44,7 +74,86 @@
      \n# or quotation mark closes image URL
 
      \nImageDescription <- (!u0022 .)+ # quotation mark
-     \nImage <- '![' HyperlinkText '](' Url (' "' ImageDescription '"')? ')'|)
+     \nImage <- '![' HyperlinkText '](' Url (' "' ImageDescription '"')? ')'\n|)
+
+#+5am
+(5am:def-suite* markdown-inline-suite :in markdown-grammar-suite)
+
+#+5am
+(with-grammar-def 
+  #?"${*md-inline*}\n${*md-foundation*}"
+  (link-test
+    (:inline
+      (:link
+        (:hyperlinktext 
+          "here's an image link")
+        (:url
+          "https://www.wikipedia.org/image.png")))
+    "[here's an image link](https://www.wikipedia.org/image.png)")
+  (text-test 
+    (:inline
+      (:text "Heyyall"))
+    #?|Heyyall|)
+  (image-test
+    (:inline
+      (:image 
+        (:hyperlinktext 
+          "here's an image link")
+        (:url
+          "https://www.wikipedia.org/image.png")
+        (:imagedescription 
+          "and this is what it looks like")))
+    #?|![here's an image link](https://www.wikipedia.org/image.png \
+    "and this is what it looks like")|)
+  (strong-test
+    (:inline
+      (:strong 
+        (:innertext
+          "Heyyall, it's ya boy")))
+
+    #?|**Heyyall, it's ya boy**|)
+  (emphasis-test
+    (:inline
+      (:emphasis
+        (:innertext
+          "Heyyall, it's ya boy!! I think..   ")))
+    #?|*Heyyall, it's ya boy!! I think..   *|))
+
+(defparameter *md-heading* #?"\nHeading <- '#'{1,6} Space Text NewLine\n")
+
+#+5am
+(5am:def-suite* markdown-heading-suite :in markdown-grammar-suite)
+
+#+5am
+(with-grammar-def 
+  #?"${*md-heading*}\n${*md-foundation*}"
+  (h1-test
+    (:heading
+      (:space)
+      (:text "some heading")
+      (:newline))
+    #?"# some heading\n")
+  (h6-test
+    (:heading
+      (:space)
+      (:text "some heading!!1! ###")
+      (:newline))
+    #?"###### some heading!!!1! ###\n")
+  )
+
+#+nil
+(TEST-MATCH-LITERAL 
+  '(:heading
+     (:space)
+     (:text "some heading!!1! ###")
+     (:newline))
+  (FUNCALL
+    (GENERATE
+      (PARSE #'PATTERN
+             #?"${*md-heading*}\n${*md-foundation*}"))
+    #?"## some heading\n"
+    ))
+
 
 (defparameter *md-block*
      #?|\
@@ -55,8 +164,7 @@
               \n# \ HorizontalRule /
               \n# \ Paragraph
 
-     \nHeadingText <- (!(NewLine / '#') .)+
-     \nHeading <- '#'{1,6} Space HeadingText NewLine
+     \n${*md-heading*}
 
      \nList <- (Ordered / Unordered) NewLine
 
@@ -84,7 +192,7 @@
   ;    \n${*md-inline*}
   ;    \n${*md-foundation*}\n"
   #?"\
-     Markdown <- Block\n
+     Markdown <- Heading\n
      / Inline\n
      \n${*md-inline*}
      \n${*md-block*}
@@ -94,10 +202,10 @@
 #+nil
 *md-grammar*
 
-#+5am
+#+nil
 (5am:def-suite* markdown-heading-suite :in markdown-grammar-suite)
 
-#+5am
+#+nil
 (md-test markdown-h1-test 
          '(:markdown 
             (:block
@@ -108,73 +216,20 @@
                 (:newline))))
          #?"# my h1 heading\n")
 
-;TODO fix the repeat pattern for generators
-; in min-max under primary
 #+nil
 (md-test markdown-h6-test 
-         '(:markdown 
-            (:block
-              (:heading
-                (:space)
-                (:headingtext
-                  "my h1 heading!!i!#")
-                (:newline))))
-         #?"###### my h1 heading!!i!#\n")
+          '(:markdown 
+             (:block
+               (:heading
+                 (:space)
+                 (:headingtext
+                   "my h1 heading!!i!#")
+                 (:newline))))
+          #?"###### my h1 heading!!i!#\n")
 #+nil
 (funcall
   (generate 
-    (parse #'pattern *md-grammar*))
+    (parse #'pattern *md-grammar*) )
   #?"## my h1 
      ")
  
-#+5am
-(5am:def-suite* markdown-inline-suite :in markdown-grammar-suite)
-
-#+5am
-(md-test markdown-link-test 
-         '(:markdown 
-            (:inline
-              (:link
-                (:hyperlinktext 
-                  "here's an image link")
-                (:url
-                  "https://www.wikipedia.org/image.png"))))
-         #?|[here's an image link](https://www.wikipedia.org/image.png)|)
-
-#+5am
-(md-test markdown-image-test
-         '(:markdown 
-            (:inline
-              (:image 
-                (:hyperlinktext 
-                  "here's an image link")
-                (:url
-                  "https://www.wikipedia.org/image.png")
-                (:imagedescription 
-                  "and this is what it looks like"))))
-         #?|![here's an image link](https://www.wikipedia.org/image.png "and this is what it looks like")|)
-#+5am
-(md-test markdown-text-test
-         '(:markdown 
-            (:inline
-              (:text "Heyyall")))
-         #?|Heyyall|)
-
-
-#+5am
-(md-test markdown-strong-test
-         '(:markdown 
-            (:inline
-              (:strong 
-                (:innertext
-                  "Heyyall, it's ya boy"))))
-         #?|**Heyyall, it's ya boy**|)
-#+5am
-(md-test markdown-emphasis-test
-         '(:markdown 
-            (:inline
-              (:emphasis
-                (:innertext
-                  "Heyyall, it's ya boy!! I think..   "))))
-         #?|*Heyyall, it's ya boy!! I think..   *|)
-

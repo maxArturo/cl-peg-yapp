@@ -39,14 +39,17 @@
                 (coerce (subseq node-str node-start node-end)
                         'string))))
     (and 
-      (eql curr-kind node-kind)
+      (eq curr-kind node-kind)
       (cond ((stringp (second curr-tree-desc))
              (progn
                (string= (second curr-tree-desc) node-literal)))
-            ((listp curr-val) 
-             (every 
-               #'identity
-               (mapcar #'test-match-literal curr-val (match-children node))))
+            ((and 
+               (listp curr-val)
+               (eql (length curr-val) (length (match-children node)))) 
+             (progn 
+               (every 
+                 #'identity
+                 (mapcar #'test-match-literal curr-val (match-children node)))))
             ((eq t curr-val) t)
             (t nil)))))
 #+nil

@@ -89,6 +89,7 @@
                        #:unicode
                        #:string-literal
                        #:primary
+                       #:suffix
                        #:expression
                        #:grammar
                        #:pattern

@@ -180,6 +180,14 @@ Value   ← [0-9]+ / '(' Expr ')'"))
               ,(gen-max-amount max-amt))))
        (:amount `(times ,(gen-primary primary)))
        (_ (gen-primary primary)))))
+#+5am
+(5am:test gen-suffix-test
+  (5am:is 
+   (eq
+     85
+     (nth 3
+       (gen-suffix
+         (parse #'suffix "'#'{83,85}"))))))
 
 ; PosLook    <- '&' Suffix
 (defnode pos-look
@@ -209,6 +217,7 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode max-amount
   (with-node-literal `,(parse-integer node-literal)))
+#+5am
 (5am:test gen-min-amount-test
   (5am:is 
    (eql
