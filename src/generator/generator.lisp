@@ -178,7 +178,10 @@ Value   ← [0-9]+ / '(' Expr ')'"))
               ,(gen-primary primary) 
               ,(gen-min-amount min-amt)
               ,(gen-max-amount max-amt))))
-       (:amount `(times ,(gen-primary primary)))
+       (:amount 
+         (let ((exact-amt (first (match-children quant-base))))
+           `(times ,(gen-primary primary) 
+                   ,(gen-exact-amount exact-amt))))
        (_ (gen-primary primary)))))
 #+5am
 (5am:test gen-suffix-test
@@ -202,6 +205,18 @@ Value   ← [0-9]+ / '(' Expr ')'"))
     (trivia:ematch kind
       (:suffix
         `(negative-lookahead ,(gen-suffix child))))))
+
+(defnode exact-amount
+  (with-node-literal `,(parse-integer node-literal)))
+#+5am
+(5am:test gen-min-amount-test
+  (5am:is 
+   (eql
+     83
+     (gen-exact-amount
+       (first 
+         (match-children 
+           (parse #'amount "{83}")))))))
 
 (defnode min-amount
   (with-node-literal `,(parse-integer node-literal)))

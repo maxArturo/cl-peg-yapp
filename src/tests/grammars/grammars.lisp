@@ -125,8 +125,7 @@
 (5am:def-suite* markdown-heading-suite :in markdown-grammar-suite)
 
 #+5am
-(with-grammar-def 
-  #?"${*md-heading*}\n${*md-foundation*}"
+(with-grammar-def #?"${*md-heading*}\n${*md-foundation*}"
   (h1-test
     (:heading
       (:space)
@@ -140,11 +139,8 @@
       (:newline))
     #?"###### some heading!!!1! ###\n"))
 
-
-
 (defparameter *md-list* 
   #?"\nList <- (Ordered / Unordered) NewLine
-
      \nOrdered <- (Space '1.' / 
                        \nSpace '2.' / 
                        \nSpace '3.' / 
@@ -158,8 +154,7 @@
 (5am:def-suite* markdown-list-suite :in markdown-grammar-suite)
 
 #+5am
-(with-grammar-def 
-  #?"${*md-list*}\n${*md-foundation*}"
+(with-grammar-def #?"${*md-list*}\n${*md-foundation*}"
   (unordered-test
     (:list
       (:unordered
@@ -191,8 +186,7 @@
 (5am:def-suite* markdown-blockquote-suite :in markdown-grammar-suite)
 
 #+5am
-(with-grammar-def 
-  #?"${*md-blockquote*}\n${*md-foundation*}"
+(with-grammar-def #?"${*md-blockquote*}\n${*md-foundation*}"
   (blockquote-test
     (:blockquote
       (:space)
@@ -208,8 +202,7 @@
 (5am:def-suite* markdown-codeblock-suite :in markdown-grammar-suite)
 
 #+5am
-(with-grammar-def 
-  #?"${*md-codeblock*}\n${*md-foundation*}"
+(with-grammar-def #?"${*md-codeblock*}\n${*md-foundation*}"
   (basic-codecontent-test
     (:codeblock
       (:newline)
@@ -219,27 +212,69 @@
       (:newline))
     #?"```\n(defun foo (bar) (print bar))\n```\n"))
 
+#+5am
+(5am:test extended-codecontent-test 
+(let ((js-sample-code #?"\
+ import jestCfg from './jest-esm.config.mjs';
+ 
+ /** @type {import('ts-jest/dist/types').JestConfigWithTsJest} */
+ const jestIsolatedCfg = {
+   ...jestCfg,
+   transform: {
+     '^.+\\.(ts|js|html|svg)$': [
+       'jest-preset-angular',
+       {
+         tsconfig: '<rootDir>/tsconfig-esm.spec.json',
+         stringifyContentPathRegex: '\\.(html|svg)$',
+         isolatedModules: true,
+         useESM: true,
+       },
+     ],
+   },
+ };
+ 
+ export default jestIsolatedCfg;"))
+     (5am:is 
+      (test-match-literal 
+        (list :codeblock
+              '(:newline)
+              (list :codecontent #?"${js-sample-code}")
+              '(:newline)
+              '(:newline))
+        (funcall (generate (parse #'pattern #?"${*md-codeblock*}\n${*md-foundation*}"))
+                 #?"```\n${js-sample-code}\n```\n")))))
+
+ 
+
+
+(defparameter *md-horizontal-rule* #?"\nHorizontalRule <- '-'{3} NewLine\n")
+
+#+5am
+(5am:in-suite markdown-grammar-suite)
 #+nil
 (TEST-MATCH-LITERAL 
-  '(:codeblock
-      (:codecontent
-        "(defun foo (bar) (print bar))")
+  '(:horizontalrule
       (:newline))
   (FUNCALL
     (GENERATE
       (PARSE #'PATTERN
-             #?"${*md-code*}\n${*md-foundation*}"))
-    #?" 1. my first list \n"))
+           #?"${*md-horizontal-rule*}\n${*md-foundation*}") )
+     #?"---\n"))
+#+5am
+(with-grammar-def #?"${*md-horizontal-rule*}\n${*md-foundation*}"
+  (horizontal-rule-test
+    (:horizontalrule
+      (:newline))
+    #?"---\n"))
+
 (defparameter *md-block*
      #?|\
      Block <- ${*md-heading*}\n
               \n${*md-list*} / 
               \n${*md-blockquote*} /
               \n${*md-codeblock*} /
-              \n# \ HorizontalRule /
+              \n${*md-horizontal-rule*} /
               \n# \ Paragraph
-
-     \nHorizontalRule <- '---' NewLine
 
      \nParagraph <- Text NewLine|)
 

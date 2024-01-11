@@ -80,6 +80,7 @@
               (test-input #'digit "onebacon"))))
 
 ; specialized digit expr for parsing purposes
+(defexpr exact-amount (one-or-more #'digit))
 (defexpr min-amount (one-or-more #'digit))
 (defexpr max-amount (one-or-more #'digit))
 

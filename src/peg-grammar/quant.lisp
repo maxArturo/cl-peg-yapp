@@ -24,7 +24,7 @@
 (defexpr amount
          (compose
           (char-literal #\{)
-          (one-or-more #'digit)
+          #'exact-amount
           (char-literal #\})))
 #+5am
 (5am:test amount-test
