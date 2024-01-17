@@ -10,6 +10,7 @@
 ;; build and test everything
 #+nil
 (progn 
+  (setf fiveam:*run-test-when-defined* t)
   (ql:quickload "trivia") 
   (ql:quickload "cl-ppcre")
   (ql:quickload "for")

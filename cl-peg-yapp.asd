@@ -33,5 +33,5 @@
     :components
     ((:module "grammars"
      :components
-     ((:file "grammars")))))))
+     ((:file "markdown")))))))
 
