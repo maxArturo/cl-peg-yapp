@@ -43,7 +43,7 @@
    Returns nil if not valid"
   `(defpattern ,parent-kind ,expr-lambda t))
 
-; this is effectively equivalent to 'unicode'
+; this is effectively equivalent to '.'
 ; in a PEG.
 (defun any-char (input i)
   "returns the car of input list if it
@@ -137,6 +137,34 @@
   (5am:is
    (eq nil (funcall (negative-lookahead (char-literal #\i))
                     (coerce "figaro" 'list) 1))))
+
+(defun escaped-char (expr)
+  "escapes a char such that a match will consume
+   both the escape char and a target expr."
+  (lambda (input i)
+    (declare (list input) (fixnum i))
+    (let ((escaped (nth i input))
+          (start (+ i 1)))
+      (and (characterp escaped)
+           (char= #\\ escaped)
+           (funcall expr input start)))))
+#+5am
+(5am:test escaped-char-test
+  (5am:is
+   (funcall (escaped-char (char-literal #\"))
+            (coerce "\\''" 'list) 0))
+ (5am:is
+   (funcall (escaped-char (char-literal #\'))
+            (coerce "\\''" 'list) 0))
+  (5am:is
+   (funcall (escaped-char (char-literal #\\))
+            (coerce "\\\\" 'list) 0))
+  (5am:is
+   (funcall (escaped-char (char-literal #\]))
+            (coerce "\\]" 'list) 0))
+  (5am:is
+   (eq nil (funcall (escaped-char (char-literal #\i))
+                    (coerce "?i" 'list) 0))))
 
 (defun compose (&rest exprs)
   "It applies the output of each expr to the

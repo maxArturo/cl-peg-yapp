@@ -27,6 +27,7 @@
                        #:defpattern
                        #:display-readable-chars
                        #:empty-match
+                       #:escaped-char
                        #:make-match
                        #:match-children
                        #:match-end

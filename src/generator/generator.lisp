@@ -330,12 +330,12 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 (5am:test gen-range-expr-test
   (5am:is
    (funcall 
-            (eval 
-              (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))
-            (coerce "6IX" 'list) 0))
+     (eval 
+       (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))
+     (coerce "6IX" 'list) 0))
   (let ((da-funk
-           (eval 
-              (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))))
+          (eval 
+            (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))))
     (5am:is (funcall da-funk (coerce "SIX" 'list) 0))
     (5am:is (funcall da-funk (coerce "`IX" 'list) 0))))
 
@@ -439,5 +439,15 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode string-literal 
   (with-node-literal 
-    `(string-expr ,(remove #\' node-literal))))
+    ; TODO use cl-ppcre to remove escaped chars and what not
+    (let* ((string-delim (char node-literal 0))
+           (escaped-chars (coerce (list #\\ string-delim) 'string))
+           (escaped)
+           )
+      `(string-expr 
+
+         (replace node-literal  )
+         (search )
+         
+         ,(remove #\ (remove #\' node-literal))))))
 
