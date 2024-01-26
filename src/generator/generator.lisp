@@ -439,15 +439,28 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode string-literal 
   (with-node-literal 
-    ; TODO use cl-ppcre to remove escaped chars and what not
     (let* ((string-delim (char node-literal 0))
-           (escaped-chars (coerce (list #\\ string-delim) 'string))
-           (escaped)
-           )
-      `(string-expr 
-
-         (replace node-literal  )
-         (search )
-         
-         ,(remove #\ (remove #\' node-literal))))))
-
+           (stripped-str 
+             (regex-replace-all
+               (format nil "\\\\~c" string-delim)
+                           node-literal 
+                           (format nil "~c" string-delim))))
+      `(string-expr ,(subseq stripped-str 1 (1- (length stripped-str)))))))
+#+5am
+(5am:test string-literal-test
+  (5am:is 
+   (funcall (eval 
+              (gen-string-literal
+                (parse #'string-literal "'most\\'ly'")))
+            (coerce "most'ly" 'list) 0))
+  (5am:is 
+   (funcall (eval 
+              (gen-string-literal
+                (parse #'string-literal "\"yo\\\"ma\"")))
+            (coerce "yo\"ma" 'list) 0))
+  (5am:is 
+   (eq NIL 
+       (funcall (eval 
+                  (gen-char-range-literal 
+                    (parse #'char-range-literal "0-5")))
+                (coerce "88" 'list) 0))))

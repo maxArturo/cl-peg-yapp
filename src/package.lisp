@@ -100,14 +100,14 @@
                        #:unipoint-class
                        #:min-zero)
                      (:use #:cl #:cl-peg-yapp/peg-parser)
-                     (:import-from #:cl-peg-yapp #:grammar-suite)
-                     )
+                     (:import-from #:cl-peg-yapp #:grammar-suite))
 
 (uiop:define-package #:cl-peg-yapp/peg-generator
-                    (:import-from #:alexandria
+                     (:import-from #:alexandria
                       #:flatten)
                      (:import-from #:cl-peg-yapp #:generator-suite)
                      (:use #:cl 
+                      #:cl-ppcre
                       #:cl-peg-yapp/peg-parser 
                       #:cl-peg-yapp/peg-grammar)
                      (:export #:generate))
