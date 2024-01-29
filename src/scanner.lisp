@@ -25,10 +25,10 @@
       "2010-10-26 10:00:53.360")))
 
 
+#+nil
 (funcall 
         (generate 
           (parse-grammar #p"src/tests/grammars/date.peg") 
-          :symbols-only t
           
           )
       "2010-10-26 10:00:53.360")

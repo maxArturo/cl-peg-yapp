@@ -3,6 +3,8 @@
 
 (in-package #:cl-peg-yapp/peg-grammar)
 
+(interpol:enable-interpol-syntax)
+
 #+5am
 (5am:def-suite* literal-suite :in grammar-suite)
 
@@ -82,6 +84,9 @@
 ; parses a literal range of chars, e.g. 'a-z' or 
 ; '0-9'. Ranges must have a dash and must not start
 ; with a dash.
+; Note that if a hyphen is escaped, it will appear
+; as a child node either as the start range or end of
+; the range.
 (defexpr char-range-literal
          (compose
           (negative-lookahead (char-literal #\-))
@@ -95,15 +100,20 @@
             #'any-char)))
 #+5am
 (5am:test char-range-literal-test
+  ; start escaped
+  (5am:is
+   (test-input #'char-range-literal "\\--a-zforeva"))
+  ; end escaped
   (5am:is
    (test-input #'char-range-literal "a-\\-zforeva"))
   (5am:is
-   (test-input #'char-range-literal "\\--a-zforeva"))
+   (test-input #'char-range-literal "a-zforeva"))
   (5am:is 
    (eq NIL
        (test-input #'char-range-literal "a--zforeva")))
-  (5am:is (eq NIL
-              (test-input #'char-range-literal "-a--zforeva"))))
+  (5am:is 
+   (eq NIL
+       (test-input #'char-range-literal "-a--zforeva"))))
 
 (defpattern digit (char-range #\0 #\9))
 #+5am
@@ -151,9 +161,13 @@
                       (test-input #'unicode "uCAF"))))
 
 (defexpr range-char-option
-         #'any-char)
+         (or-expr 
+           #'escaped-square-bracket
+           #'any-char))
 #+5am
 (5am:test range-char-option-test
+  (5am:is
+   (test-input #'range-char-option "\\]_"))
   (5am:is
    (test-input #'range-char-option "`_")))
 
@@ -167,7 +181,7 @@
            (compose
             (negative-lookahead (char-literal #\]))
             (or-expr 
-              #'escaped-square-bracket
+              #'char-range-literal
               #'range-char-option)))
           (char-literal #\])))
 #+5am
@@ -180,10 +194,16 @@
      (coerce "[`\\]_]" 'list) 0))
   (5am:is
    (range-expr
+     (coerce "[A-Z\\--a]" 'list) 0))
+  (5am:is
+   (range-expr
      (coerce "[`_]" 'list) 0))
   (5am:is
    (range-expr
-     (coerce "[`A-Za-z0-9_]" 'list) 0))
+     (coerce "[`A-Za-z\\]0-9_]" 'list) 0))
+  (5am:is
+   (range-expr
+     (coerce "[`A-Z\\--a-z\\]0-9_]" 'list) 0))
   (5am:is (eq NIL
               (funcall
                 'range-expr

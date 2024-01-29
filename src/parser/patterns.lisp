@@ -152,7 +152,7 @@
 (5am:test escaped-char-test
   (5am:is
    (funcall (escaped-char (char-literal #\"))
-            (coerce "\\''" 'list) 0))
+            (coerce "\\\"" 'list) 0))
  (5am:is
    (funcall (escaped-char (char-literal #\'))
             (coerce "\\''" 'list) 0))

@@ -340,10 +340,20 @@ Value   ← [0-9]+ / '(' Expr ')'"))
     (5am:is (funcall da-funk (coerce "`IX" 'list) 0))))
 
 (defnode range-char-option
-  (with-node-literal 
-  `(char-literal ,(char node-literal 0))))
+  (if (match-children node)
+      (with-child 
+        (trivia:ematch kind
+          (:escaped-square-bracket
+            `(char-literal #\]))))
+      (with-node-literal
+        `(char-literal ,(char node-literal 0)))))
 #+5am
 (5am:test range-char-option-test
+  (5am:is 
+   (funcall 
+     (eval 
+       (gen-range-char-option (parse #'range-char-option "\\]")))
+     (coerce "]" 'list) 0))
   (5am:is 
    (funcall 
      (eval 
@@ -420,11 +430,24 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode char-range-literal
   (with-node-literal 
-    `(char-range ,(char node-literal 0) 
-                 ,(char node-literal 2))))
-(gen-char-range-literal (parse #'char-range-literal "0-5"))
+    (if (match-children node)
+        (with-child 
+          (trivia:ematch kind
+            (:escaped-hyphen
+              (if (eql (match-start child) node-start)
+                  `(char-range #\- 
+                               ,(char node-literal 3))   
+                  `(char-range ,(char node-literal 0)
+                               #\-)))))
+        `(char-range ,(char node-literal 0) 
+                     ,(char node-literal 2)))))
 #+5am
 (5am:test char-range-literal-test
+  (5am:is 
+   (funcall (eval 
+              (gen-char-range-literal 
+                (parse #'char-range-literal "\\--5")))
+            (coerce "38" 'list) 0))
   (5am:is 
    (funcall (eval 
               (gen-char-range-literal 
