@@ -51,6 +51,15 @@
 (defexpr escaped-square-bracket
         (escaped-char (char-literal #\])))
 
+
+;; TODO left off here
+(compose
+(test-input 
+ (or-expr
+  #'escaped-single-quote
+  #'any-char)
+ "\\"))
+
 ; represents a single-quoted string, e.g. 'hello'
 (defexpr string-literal
          (or-expr 
@@ -76,6 +85,8 @@
              (char-literal #\'))))
 #+5am
 (5am:test string-literal-test
+  (5am:is
+   (test-input #'string-literal "'\\\\'"))
   (5am:is
    (test-input #'string-literal "'\\\''"))
   (5am:is
