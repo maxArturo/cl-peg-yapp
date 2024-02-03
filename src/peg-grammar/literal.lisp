@@ -37,6 +37,10 @@
 
 (defexpr escaped-single-quote
         (escaped-char (char-literal #\')))
+#+5am
+(5am:test string-literal-test
+  (5am:is
+   (test-input #'escaped-single-quote "\\\'")))
 
 (defexpr escaped-double-quote
         (escaped-char (char-literal #\")))
@@ -73,7 +77,11 @@
 #+5am
 (5am:test string-literal-test
   (5am:is
+   (test-input #'string-literal "'\\\''"))
+  (5am:is
    (test-input #'string-literal "\"some\\\"thing\""))
+  (5am:is
+   (test-input #'string-literal "\"\\\"\""))
   (5am:is
    (test-input #'string-literal "'somet\\'hing'"))
   (5am:is

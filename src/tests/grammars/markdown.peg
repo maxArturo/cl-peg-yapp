@@ -321,11 +321,10 @@ Str <- StartList NormalChar+ StrChunk*
 StrChunk <- (NormalChar / '_'+ &Alphanumeric)+ /
            AposChunk
 
-AposChunk <- '\' u0039 &Alphanumeric
+AposChunk <- '\\\'' &Alphanumeric
 
-EscapedChar <-   '\\' !Newline [-\\`|*_{}[\]()#+.!><]
-                
-
+# EscapedChar <-   '\\' !Newline [-\\`|*_{}[\]()#+.!><]
+#                 
 # Entity <-    ( HexEntity / DecEntity / CharEntity )
 #             
 # 

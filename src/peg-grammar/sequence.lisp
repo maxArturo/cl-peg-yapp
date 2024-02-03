@@ -80,6 +80,7 @@
 (interpol:enable-interpol-syntax)
 #+5am
 (5am:test scan-def-test
+  (test-full-match #'definition "AposChunk <- '\\\''")
   (test-full-match #'definition "AddExpr  <- ('+'/'-') Factor")
   (test-full-match #'definition "First <- [a-d]")
   (test-full-match #'definition "HelloWorld" :other-value nil) 
