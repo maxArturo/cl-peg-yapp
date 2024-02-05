@@ -3,6 +3,8 @@
 
 (in-package #:cl-peg-yapp/peg-grammar)
 
+(interpol:enable-interpol-syntax)
+
 #+5am
 (5am:def-suite* literal-suite :in grammar-suite)
 
@@ -33,43 +35,91 @@
           (5am:is (eq NIL
            (test-input #'lower-case "Jigaro"))))
 
+;; escaped chars and expressions
+(defexpr escaped-char-literal #'any-char)
+(defexpr escaped-string-char
+        (escaped-char #'escaped-char-literal))
+
+#+5am
+(5am:test escaped-string-char-test
+  (5am:is
+   (test-input #'escaped-char-literal "\\\\"))
+  (5am:is
+   (test-input #'escaped-char-literal "\\\'")))
+
 ; represents a single-quoted string, e.g. 'hello'
 (defexpr string-literal
-         (compose
-          (char-literal #\')
-          (one-or-more
+         (or-expr 
            (compose
-            (negative-lookahead 
-              (or-expr (char-literal #\')
-                       (string-expr "\'")))
-            #'any-char))
-          (char-literal #\')))
+             (char-literal #\")
+             (one-or-more
+               (compose
+                 (negative-lookahead 
+                   (char-literal #\"))
+                 (or-expr
+                   #'escaped-string-char
+                   #'any-char)))
+             (char-literal #\"))
+           (compose
+             (char-literal #\')
+             (one-or-more
+               (compose
+                 (negative-lookahead 
+                   (char-literal #\'))
+                 (or-expr
+                   #'escaped-string-char
+                   #'any-char)))
+             (char-literal #\'))))
 #+5am
 (5am:test string-literal-test
-          (5am:is
-           (test-input #'string-literal "'something'"))
-          (5am:is (eq NIL
-                      (test-input #'string-literal "33Dathing'"))))
+  (5am:is
+   (test-input #'string-literal "'\\\\'"))
+  (5am:is
+   (test-input #'string-literal "'\\\''"))
+  (5am:is
+   (test-input #'string-literal "\"some\\\"thing\""))
+  (5am:is
+   (test-input #'string-literal "\"\\\"\""))
+  (5am:is
+   (test-input #'string-literal "'somet\\'hing'"))
+  (5am:is
+   (test-input #'string-literal "'something'"))
+  (5am:is (eq NIL
+              (test-input #'string-literal "33Dathing'"))))
 
 ; parses a literal range of chars, e.g. 'a-z' or 
 ; '0-9'. Ranges must have a dash and must not start
 ; with a dash.
+; Note that if a hyphen is escaped, it will appear
+; as a child node either as the start range or end of
+; the range.
 (defexpr char-range-literal
          (compose
           (negative-lookahead (char-literal #\-))
-          #'any-char
+          (or-expr 
+            #'escaped-string-char
+            #'any-char)
           (char-literal #\-)
           (negative-lookahead (char-literal #\-))
-          #'any-char))
+          (or-expr 
+            #'escaped-string-char
+            #'any-char)))
 #+5am
 (5am:test char-range-literal-test
+  ; start escaped
+  (5am:is
+   (test-input #'char-range-literal "\\--a-zforeva"))
+  ; end escaped
+  (5am:is
+   (test-input #'char-range-literal "a-\\-zforeva"))
   (5am:is
    (test-input #'char-range-literal "a-zforeva"))
   (5am:is 
    (eq NIL
        (test-input #'char-range-literal "a--zforeva")))
-  (5am:is (eq NIL
-              (test-input #'char-range-literal "-a--zforeva"))))
+  (5am:is 
+   (eq NIL
+       (test-input #'char-range-literal "-a--zforeva"))))
 
 (defpattern digit (char-range #\0 #\9))
 #+5am
@@ -80,6 +130,7 @@
               (test-input #'digit "onebacon"))))
 
 ; specialized digit expr for parsing purposes
+(defexpr exact-amount (one-or-more #'digit))
 (defexpr min-amount (one-or-more #'digit))
 (defexpr max-amount (one-or-more #'digit))
 
@@ -116,9 +167,13 @@
                       (test-input #'unicode "uCAF"))))
 
 (defexpr range-char-option
-         #'any-char)
+         (or-expr 
+           #'escaped-string-char
+           #'any-char))
 #+5am
 (5am:test range-char-option-test
+  (5am:is
+   (test-input #'range-char-option "\\]_"))
   (5am:is
    (test-input #'range-char-option "`_")))
 
@@ -131,7 +186,7 @@
           (one-or-more
            (compose
             (negative-lookahead (char-literal #\]))
-            (or-expr
+            (or-expr 
               #'char-range-literal
               #'range-char-option)))
           (char-literal #\])))
@@ -139,10 +194,22 @@
 (5am:test range-expr-test
   (5am:is
    (range-expr
+     (coerce #?"[\\]]" 'list) 0))
+  (5am:is
+   (range-expr
+     (coerce "[`\\]_]" 'list) 0))
+  (5am:is
+   (range-expr
+     (coerce "[A-Z\\--a]" 'list) 0))
+  (5am:is
+   (range-expr
      (coerce "[`_]" 'list) 0))
   (5am:is
    (range-expr
-     (coerce "[`A-Za-z0-9_]" 'list) 0))
+     (coerce "[`A-Za-z\\]0-9_]" 'list) 0))
+  (5am:is
+   (range-expr
+     (coerce "[`A-Z\\--a-z\\]0-9_]" 'list) 0))
   (5am:is (eq NIL
               (funcall
                 'range-expr

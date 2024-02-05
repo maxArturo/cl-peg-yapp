@@ -26,7 +26,7 @@ Date <- Year '-' Month ('-' Day)?
 DateTime <- Date ' '? Time
 
 # Free style
-MonthAbbr <- 'Jan' / 'Feb' / 'Mar' / 'Apr' / 'May' / 'Jun' / 'Jul' / 'Aug' / 'Sep' / 'Sept' / 'Oct' / 'Nov' / 'Dec'
+MonthAbbr <- "Jan" / 'Feb' / 'Mar' / 'Apr' / 'May' / 'Jun' / 'Jul' / 'Aug' / 'Sep' / 'Sept' / 'Oct' / 'Nov' / 'Dec'
 WeekDayAbbr <- 'Mon' / 'Tu' / 'Tue' / 'Tues' / 'Wed' / 'Th' / 'Thu' / 'Thur' / 'Thurs' / 'Fri' / 'Sat' / 'Sun'
 FreeDateTime <- WeekDayAbbr ' ' MonthAbbr ' ' Day ' ' Time ' ' Year
 

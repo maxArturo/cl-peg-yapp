@@ -145,7 +145,6 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 (gen-definition 
     (parse #'definition "AddExpr  <- ('+'/'-') Factor"))
 
-
 ; Seq             <- Prefix+
 (defnode sequence-expr 
   (let 
@@ -179,8 +178,19 @@ Value   ← [0-9]+ / '(' Expr ')'"))
               ,(gen-primary primary) 
               ,(gen-min-amount min-amt)
               ,(gen-max-amount max-amt))))
-       (:amount `(times ,(gen-primary primary)))
+       (:amount 
+         (let ((exact-amt (first (match-children quant-base))))
+           `(times ,(gen-primary primary) 
+                   ,(gen-exact-amount exact-amt))))
        (_ (gen-primary primary)))))
+#+5am
+(5am:test gen-suffix-test
+  (5am:is 
+   (eq
+     85
+     (nth 3
+       (gen-suffix
+         (parse #'suffix "'#'{83,85}"))))))
 
 ; PosLook    <- '&' Suffix
 (defnode pos-look
@@ -196,6 +206,18 @@ Value   ← [0-9]+ / '(' Expr ')'"))
       (:suffix
         `(negative-lookahead ,(gen-suffix child))))))
 
+(defnode exact-amount
+  (with-node-literal `,(parse-integer node-literal)))
+#+5am
+(5am:test gen-min-amount-test
+  (5am:is 
+   (eql
+     83
+     (gen-exact-amount
+       (first 
+         (match-children 
+           (parse #'amount "{83}")))))))
+
 (defnode min-amount
   (with-node-literal `,(parse-integer node-literal)))
 #+5am
@@ -210,6 +232,7 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode max-amount
   (with-node-literal `,(parse-integer node-literal)))
+#+5am
 (5am:test gen-min-amount-test
   (5am:is 
    (eql
@@ -286,7 +309,12 @@ Value   ← [0-9]+ / '(' Expr ')'"))
   (5am:is
    (funcall 
      (eval 
-       (gen-unicode (parse #'unicode #?"u007A")))
+       (gen-unicode (parse #'unicode "u000A")))
+     '(#\Newline) 0))
+  (5am:is
+   (funcall 
+     (eval 
+       (gen-unicode (parse #'unicode "u007A")))
      (coerce "zunky" 'list) 0)))
 
 (defnode range-expr
@@ -302,25 +330,43 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 (5am:test gen-range-expr-test
   (5am:is
    (funcall 
-            (eval 
-              (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))
-            (coerce "6IX" 'list) 0))
+     (eval 
+       (gen-range-expr (parse #'range-expr "[`\\\-A-Z0-9]")))
+     (coerce "6IX" 'list) 0))
+  (5am:is
+   (funcall 
+     (eval 
+       (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))
+     (coerce "6IX" 'list) 0))
   (let ((da-funk
-           (eval 
-              (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))))
+          (eval 
+            (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))))
     (5am:is (funcall da-funk (coerce "SIX" 'list) 0))
     (5am:is (funcall da-funk (coerce "`IX" 'list) 0))))
 
 (defnode range-char-option
-  (with-node-literal 
-  `(char-literal ,(char node-literal 0))))
+  (if (match-children node)
+      (with-child 
+        (trivia:ematch kind
+          (:escaped-string-char
+            (gen-escaped-string-char child))))
+      (with-node-literal
+        `(char-literal ,(char node-literal 0)))))
 #+5am
 (5am:test range-char-option-test
   (5am:is 
    (funcall 
      (eval 
+       (gen-range-char-option (parse #'range-char-option "\\]")))
+     (coerce "]" 'list) 0))
+  (5am:is 
+   (funcall 
+     (eval 
        (gen-range-char-option (parse #'range-char-option "`00A")))
      (coerce "`[A-Z]" 'list) 0)))
+
+(defnode escaped-string-char
+  (with-node-literal `(char-literal ,(char node-literal 1))))
 
 (defnode alphanum-class
   `(or-expr (char-range #\A #\Z)
@@ -392,11 +438,24 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode char-range-literal
   (with-node-literal 
-    `(char-range ,(char node-literal 0) 
-                 ,(char node-literal 2))))
-(gen-char-range-literal (parse #'char-range-literal "0-5"))
+    (if (match-children node)
+        (with-child 
+          (trivia:ematch kind
+            (:escaped-string-char
+              (if (eql (match-start child) node-start)
+                  `(char-range #\- 
+                               ,(char node-literal 3))   
+                  `(char-range ,(char node-literal 0)
+                               #\-)))))
+        `(char-range ,(char node-literal 0) 
+                     ,(char node-literal 2)))))
 #+5am
 (5am:test char-range-literal-test
+  (5am:is 
+   (funcall (eval 
+              (gen-char-range-literal 
+                (parse #'char-range-literal "\\--5")))
+            (coerce "38" 'list) 0))
   (5am:is 
    (funcall (eval 
               (gen-char-range-literal 
@@ -411,5 +470,28 @@ Value   ← [0-9]+ / '(' Expr ')'"))
 
 (defnode string-literal 
   (with-node-literal 
-    `(string-expr ,(remove #\' node-literal))))
-
+    (let* ((string-delim (char node-literal 0))
+           (stripped-str 
+             (regex-replace-all
+               (format nil "\\\\~c" string-delim)
+                           node-literal 
+                           (format nil "~c" string-delim))))
+      `(string-expr ,(subseq stripped-str 1 (1- (length stripped-str)))))))
+#+5am
+(5am:test string-literal-test
+  (5am:is 
+   (funcall (eval 
+              (gen-string-literal
+                (parse #'string-literal "'most\\'ly'")))
+            (coerce "most'ly" 'list) 0))
+  (5am:is 
+   (funcall (eval 
+              (gen-string-literal
+                (parse #'string-literal "\"yo\\\"ma\"")))
+            (coerce "yo\"ma" 'list) 0))
+  (5am:is 
+   (eq NIL 
+       (funcall (eval 
+                  (gen-char-range-literal 
+                    (parse #'char-range-literal "0-5")))
+                (coerce "88" 'list) 0))))

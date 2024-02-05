@@ -10,12 +10,13 @@
 ;; build and test everything
 #+nil
 (progn 
-  (ql:quickload "trivia")
+  (ql:quickload "trivia") 
   (ql:quickload "cl-ppcre")
   (ql:quickload "for")
   (ql:quickload "cl-interpol")
   (ql:quickload "alexandria")
   (ql:quickload "fiveam")
+  (setf fiveam:*run-test-when-defined* t)
   (load "~/Developer/cl-peg-yapp/cl-peg-yapp.asd")
   (interpol:enable-interpol-syntax)
   (asdf:make "cl-peg-yapp")

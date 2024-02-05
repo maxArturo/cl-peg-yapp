@@ -78,8 +78,13 @@
            #'expression))
 
 (interpol:enable-interpol-syntax)
+
+; (parse #'definition "EscapedChar <-   '\\' !Newline [-\\\\`|*_{}[\]()#+.!><]")
+; (parse #'definition "")
 #+5am
 (5am:test scan-def-test
+  (test-full-match #'definition "AposChunk <- '\\\''")
+  (test-full-match #'definition "EscapedChar <-   '\\\\'")
   (test-full-match #'definition "AddExpr  <- ('+'/'-') Factor")
   (test-full-match #'definition "First <- [a-d]")
   (test-full-match #'definition "HelloWorld" :other-value nil) 

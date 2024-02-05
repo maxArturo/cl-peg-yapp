@@ -43,7 +43,7 @@
    Returns nil if not valid"
   `(defpattern ,parent-kind ,expr-lambda t))
 
-; this is effectively equivalent to 'unicode'
+; this is effectively equivalent to '.'
 ; in a PEG.
 (defun any-char (input i)
   "returns the car of input list if it
@@ -75,6 +75,9 @@
            (new-match input start end)))))
 #+5am
 (5am:test char-literal-test
+  (5am:is
+   (funcall (char-literal #\Newline)
+            '(#\Newline) 0))
   (5am:is
    (funcall (char-literal #\f)
             (coerce "funky" 'list) 0))
@@ -134,6 +137,37 @@
   (5am:is
    (eq nil (funcall (negative-lookahead (char-literal #\i))
                     (coerce "figaro" 'list) 1))))
+
+(defun escaped-char (expr)
+  "escapes a char such that a match will consume
+   both the escape char and a target expr."
+  (lambda (input i)
+    (declare (list input) (fixnum i))
+    (let ((escaped (nth i input))
+          (start (+ i 1)))
+      (and (characterp escaped)
+           (char= #\\ escaped)
+           (funcall expr input start)))))
+#+5am
+(5am:test escaped-char-test
+  (5am:is
+   (funcall (escaped-char (char-literal #\\))
+            (coerce "\\\\" 'list) 0))
+  (5am:is
+   (funcall (escaped-char (char-literal #\"))
+            (coerce "\\\"" 'list) 0))
+ (5am:is
+   (funcall (escaped-char (char-literal #\'))
+            (coerce "\\''" 'list) 0))
+  (5am:is
+   (funcall (escaped-char (char-literal #\\))
+            (coerce "\\\\" 'list) 0))
+  (5am:is
+   (funcall (escaped-char (char-literal #\]))
+            (coerce "\\]" 'list) 0))
+  (5am:is
+   (eq nil (funcall (escaped-char (char-literal #\i))
+                    (coerce "?i" 'list) 0))))
 
 (defun compose (&rest exprs)
   "It applies the output of each expr to the
@@ -213,10 +247,11 @@
        (min-res (funcall (times expr m) input index))
        (max-res 
          (and min-res
-              (funcall (times expr n) 
+              (funcall (zero-or-more expr)
                        input 
                        (match-end min-res)))))
       (and min-res
+           (if max-res (<= (match-end max-res) n) t)
            (new-match 
              input start 
              (match-end (or max-res min-res)) 
@@ -226,9 +261,19 @@
 #+5am
 (5am:test min-max-times-test
   (5am:is
+   (eq NIL
+       (funcall
+         (min-max-times (string-expr "#") 1 6)
+         (coerce " my man"'list) 0)))
+  (5am:is
    (funcall
-     (min-max-times #'any-char 3 5)
-     (coerce "figarlicious" 'list) 0))
+     (min-max-times (string-expr "#") 1 6)
+     (coerce "# my man"'list) 0))
+  (5am:is
+   (eq NIL
+       (funcall
+         (min-max-times (string-expr "#") 1 6)
+         (coerce "####### my man"'list) 0)))
   (5am:is (eq NIL
               (funcall
                 (min-max-times #'any-char 8 9)
