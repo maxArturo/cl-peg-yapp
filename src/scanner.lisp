@@ -18,23 +18,19 @@
   (mapcar 
     (lambda (str)
       (test-full-match 
-        (generate 
-          (parse-grammar #p"src/tests/grammars/date.peg"))
-        str :parser-expr t))
+       (generate 
+         (parse-grammar #p"src/tests/grammars/date.peg"))
+       str :parser-expr t))
     '("Fri Jun 17 03:50:56 PDT 2011"
-      "2010-10-26 10:00:53.360")))
-
+      "2010-10-26 10:00:53.360"))
+  (test-full-match
+    (generate 
+      (parse-grammar #p"src/tests/grammars/markdown.peg"))
+    "**hello**" :parser-expr t))
 
 #+nil
 (funcall 
-        (generate 
-          (parse-grammar #p"src/tests/grammars/date.peg") 
-          
-          )
-      "2010-10-26 10:00:53.360")
+ (generate 
+  (parse-grammar #p"src/tests/grammars/date.peg"))
+ "2010-10-26 10:00:53.360")
 
-  ; (5am:skip
-  ;  (test-full-match
-  ;    (generate 
-  ;      (parse-grammar #p"src/tests/grammars/markdown.peg"))
-  ;    "**hello**" :parser-expr t))

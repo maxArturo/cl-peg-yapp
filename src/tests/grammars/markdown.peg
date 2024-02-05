@@ -325,233 +325,196 @@ AposChunk <- '\\\'' &Alphanumeric
 
 EscapedChar <-   '\\\\' !Newline [-\\`|*_{}[\]()#+.!><]
 
-# Entity <-    ( HexEntity / DecEntity / CharEntity )
-#             
-# 
-# Endline <-   LineBreak / TerminalEndline / NormalEndline
-# 
-# NormalEndline <-   Sp Newline !BlankLine !'>' !AtxStart
-#                   !(Line ('='+ / '-'+) Newline)
-# 
-# TerminalEndline <- Sp Newline Eof
-#                   
-# 
-# LineBreak <- '  ' NormalEndline
-#             
-# 
-# Symbol <-    < SpecialChar >
-#             
-# 
-# # This keeps the parser from getting bogged down on long strings of '*' or '_',
-# # or strings of '*' or '_' with space on each side:
-# UlOrStarLine <-  (UlLine / StarLine) 
-# StarLine <-      < '****' '*'* > / < Spacechar '*'+ &Spacechar >
-# UlLine   <-      < '____' '_'* > / < Spacechar '_'+ &Spacechar >
-# 
-# Emph <-      EmphStar / EmphUl
-# 
-# Whitespace <- Spacechar / Newline
-# 
-# EmphStar <-  '*' !Whitespace
-#             a:StartList
-#             ( !'*' b:Inline 
-#             / b:StrongStar  
-#             )+
-#             '*'
-#             
-# 
-# EmphUl <-    '_' !Whitespace
-#             a:StartList
-#             ( !'_' b:Inline 
-#             / b:StrongUl  
-#             )+
-#             '_'
-#             
-# 
-# Strong <- StrongStar / StrongUl
-# 
-# StrongStar <-    '**' !Whitespace
-#                 a:StartList
-#                 ( !'**' b:Inline )+
-#                 '**'
-#                 
-# 
-# StrongUl   <-    '__' !Whitespace
-#                 a:StartList
-#                 ( !'__' b:Inline )+
-#                 '__'
-#                 
-# 
-# Strike <- &{ extension(EXT_STRIKE) }
-#          '~~' !Whitespace
-#          a:StartList
-#          ( !'~~' b:Inline )+
-#          '~~'
-#          
-# 
-# Image <- '!' ( ExplicitLink / ReferenceLink )
-# 
-# Link <-  ExplicitLink / ReferenceLink / AutoLink
-# 
-# ReferenceLink <- ReferenceLinkDouble / ReferenceLinkSingle
-# 
-# ReferenceLinkDouble <-  a:Label < Spnl > !'[]' b:Label
-# 
-# ReferenceLinkSingle <-  a:Label < (Spnl '[]')? >
-# 
-# ExplicitLink <-  Label '(' Sp Source Spnl Title Sp ')'
-# 
-# Source  <- ( '<' < SourceContents > '>' / < SourceContents > )
-#           
-# 
-# SourceContents <- ( ( !'(' !')' !'>' Nonspacechar )+ / '(' SourceContents ')')*
-# 
-# Title <- ( TitleSingle / TitleDouble / '""')
-#         
-# 
-# TitleSingle <- '\'' < ( !( '\'' Sp ( ')' / Newline ) ) . )* > '\''
-# 
-# TitleDouble <- '"' < ( !( '"' Sp ( ')' / Newline ) ) . )* > '"'
-# 
-# AutoLink <- AutoLinkUrl / AutoLinkEmail
-# 
-# AutoLinkUrl <-   '<' < [A-Za-z]+ "://" ( !Newline !'>' . )+ > '>'
-#                 
-# 
-# AutoLinkEmail <- '<' ( "mailto:" )? < [-A-Za-z0-9+_./!%~$]+ '@' ( !Newline !'>' . )+ > '>'
-# 
-# Reference <- NonindentSpace !"[]" l:Label ':' Spnl s:RefSrc t:RefTitle BlankLine+
-# 
-# Label <- '[' ( !'^' &{ extension(EXT_NOTES) } / &. &{ !extension(EXT_NOTES) } )
-#         a:StartList
-#         ( !']' Inline  )*
-#         ']'
-#         
-# 
-# RefSrc <- < Nonspacechar+ >
-# 
-# RefTitle <-  ( RefTitleSingle / RefTitleDouble / RefTitleParens / EmptyTitle )
-#             
-# 
-# EmptyTitle <- < "" >
-# 
-# RefTitleSingle <- Spnl '\'' < ( !( '\'' Sp Newline / Newline ) . )* > '\''
-# 
-# RefTitleDouble <- Spnl '"' < ( !('"' Sp Newline / Newline) . )* > '"'
-# 
-# RefTitleParens <- Spnl '(' < ( !(')' Sp Newline / Newline) . )* > ')'
-# 
-# References <- a:StartList
-#              ( b:Reference  / SkipBlock )*
-#              
-# 
-# Ticks1 <- "`" !'`'
-# Ticks2 <- "``" !'`'
-# Ticks3 <- "```" !'`'
-# Ticks4 <- "````" !'`'
-# Ticks5 <- "`````" !'`'
-# 
-# Code <- ( Ticks1 Sp < ( ( !'`' Nonspacechar )+ / !Ticks1 '`'+ / !( Sp Ticks1 ) ( Spacechar / Newline !BlankLine ) )+ > Sp Ticks1
-#        / Ticks2 Sp < ( ( !'`' Nonspacechar )+ / !Ticks2 '`'+ / !( Sp Ticks2 ) ( Spacechar / Newline !BlankLine ) )+ > Sp Ticks2
-#        / Ticks3 Sp < ( ( !'`' Nonspacechar )+ / !Ticks3 '`'+ / !( Sp Ticks3 ) ( Spacechar / Newline !BlankLine ) )+ > Sp Ticks3
-#        / Ticks4 Sp < ( ( !'`' Nonspacechar )+ / !Ticks4 '`'+ / !( Sp Ticks4 ) ( Spacechar / Newline !BlankLine ) )+ > Sp Ticks4
-#        / Ticks5 Sp < ( ( !'`' Nonspacechar )+ / !Ticks5 '`'+ / !( Sp Ticks5 ) ( Spacechar / Newline !BlankLine ) )+ > Sp Ticks5
-#        )
-#        
-# 
-# RawHtml <-   < (HtmlComment / HtmlBlockScript / HtmlTag) >
-# 
-# BlankLine <-     Sp Newline
-# 
-# Quoted <-        '"' (!'"' .)* '"' / '\'' (!'\'' .)* '\''
-# HtmlAttribute <- (AlphanumericAscii / '-')+ Spnl ('=' Spnl (Quoted / (!'>' Nonspacechar)+))? Spnl
-# HtmlComment <-   "<!--" (!"-->" .)* "-->"
-# HtmlTag <-       '<' Spnl '/'? AlphanumericAscii+ Spnl HtmlAttribute* '/'? Spnl '>'
-# Eof <-           !.
-# Spacechar <-     ' ' / '\t'
-# Nonspacechar <-  !Spacechar !Newline .
-# Newline <-       '\n' / '\r' '\n'?
-# Sp <-            Spacechar*
-# Spnl <-          Sp (Newline Sp)?
-# SpecialChar <-   '~' / '*' / '_' / '`' / '&' / '[' / ']' / '(' / ')' / '<' / '!' / '#' / '\\' / '\'' / '"' 
-# NormalChar <-    !( SpecialChar / Spacechar / Newline ) .
-# Alphanumeric <- [0-9A-Za-z] / '\200' / '\201' / '\202' / '\203' / '\204' / '\205' / '\206' / '\207' / '\210' / '\211' / '\212' / '\213' / '\214' / '\215' / '\216' / '\217' / '\220' / '\221' / '\222' / '\223' / '\224' / '\225' / '\226' / '\227' / '\230' / '\231' / '\232' / '\233' / '\234' / '\235' / '\236' / '\237' / '\240' / '\241' / '\242' / '\243' / '\244' / '\245' / '\246' / '\247' / '\250' / '\251' / '\252' / '\253' / '\254' / '\255' / '\256' / '\257' / '\260' / '\261' / '\262' / '\263' / '\264' / '\265' / '\266' / '\267' / '\270' / '\271' / '\272' / '\273' / '\274' / '\275' / '\276' / '\277' / '\300' / '\301' / '\302' / '\303' / '\304' / '\305' / '\306' / '\307' / '\310' / '\311' / '\312' / '\313' / '\314' / '\315' / '\316' / '\317' / '\320' / '\321' / '\322' / '\323' / '\324' / '\325' / '\326' / '\327' / '\330' / '\331' / '\332' / '\333' / '\334' / '\335' / '\336' / '\337' / '\340' / '\341' / '\342' / '\343' / '\344' / '\345' / '\346' / '\347' / '\350' / '\351' / '\352' / '\353' / '\354' / '\355' / '\356' / '\357' / '\360' / '\361' / '\362' / '\363' / '\364' / '\365' / '\366' / '\367' / '\370' / '\371' / '\372' / '\373' / '\374' / '\375' / '\376' / '\377'
-# AlphanumericAscii <- [A-Za-z0-9]
-# Digit <- [0-9]
-# BOM <- "\357\273\277"
-# 
-# HexEntity <-     < '&' '#' [Xx] [0-9a-fA-F]+ ';' >
-# DecEntity <-     < '&' '#' [0-9]+ > ';' >
-# CharEntity <-    < '&' [A-Za-z0-9]+ ';' >
-# 
-# NonindentSpace <-    "   " / "  " / " " / ""
-# Indent <-            "\t" / "    "
-# IndentedLine <-      Indent Line
-# OptionallyIndentedLine <- Indent? Line
-# 
-# # StartList starts a list data structure that can be added to with cons:
-# StartList <- &.
-#             
-# 
-# Line <-  RawLine
-#         
-# RawLine <- ( < (!'\r' !'\n' .)* Newline > / < .+ > Eof )
-# 
-# SkipBlock <- HtmlBlock
-#           / ( !'#' !SetextBottom1 !SetextBottom2 !BlankLine RawLine )+ BlankLine*
-#           / BlankLine+
-#           / RawLine
-# 
-# # Syntax extensions
-# 
-# Smart <- ( Ellipsis / Dash / SingleQuoted / DoubleQuoted / Apostrophe )
-# 
-# Apostrophe <- '\''
-# 
-# Ellipsis <- ("..." / ". . .")
-# 
-# Dash <- EmDash / EnDash
-# 
-# EnDash <- '-' &Digit
-# 
-# EmDash <- '---' / '--'
-# 
-# SingleQuoteStart <- '\'' !(Spacechar / Newline)
-# 
-# SingleQuoteEnd <- '\'' !Alphanumeric
-# 
-# SingleQuoted <- (SingleQuoteStart StartList
-#                (!SingleQuoteEnd Inline)+
-#                SingleQuoteEnd)
-# 
-# DoubleQuoteStart <- '"'
-# 
-# DoubleQuoteEnd <- '"'
-# 
-# DoubleQuoted <-  (DoubleQuoteStart
-#                 StartList
-#                 ( !DoubleQuoteEnd Inline)+
-#                 DoubleQuoteEnd)
-#                 
-# 
-# NoteReference <- RawNoteReference
-# 
-# RawNoteReference <- '[^' (!Newline !']' .)+ ']'
-# 
-# Note <-         (NonindentSpace RawNoteReference ':' Sp
-#                 StartList
-#                 RawNoteBlock
-#                 ( &Indent RawNoteBlock)*)
-#                 
-# 
-# InlineNote <-  (  "^["
-#                 StartList
-#                 (!']' Inline)+
-#                 ']')
-# 
-# Notes <-         StartList
-#                 (Note / SkipBlock )*
-#                 
-# 
-# RawNoteBlock <-  StartList (!BlankLine OptionallyIndentedLine)+ BlankLine*
-# 
+Entity <-    ( HexEntity / DecEntity / CharEntity )
+            
+
+Endline <-   LineBreak / TerminalEndline / NormalEndline
+
+NormalEndline <-   Sp Newline !BlankLine !'>' !AtxStart
+                  !(Line ('='+ / '-'+) Newline)
+
+TerminalEndline <- Sp Newline Eof
+                  
+
+LineBreak <- '  ' NormalEndline
+
+ 
+Symbol <-    SpecialChar
+
+
+# This keeps the parser from getting bogged down on long strings of '*' or '_',
+# or strings of '*' or '_' with space on each side:
+
+UlOrStarLine <-  (UlLine / StarLine) 
+
+StarLine <-      '****' '*'* / Spacechar '*'+ &Spacechar
+UlLine   <-      '____' '_'* / Spacechar '_'+ &Spacechar
+
+Emph <-      EmphStar / EmphUl
+
+Whitespace <- Spacechar / Newline
+
+EmphStar <-  '*' !Whitespace (!'*' Inline / StrongStar)+ '*'
+
+EmphUl <-    '_' !Whitespace (!'_' Inline / StrongUl)+ '_'
+
+Strong <- StrongStar / StrongUl
+
+StrongStar <-    '**' !Whitespace (!'**' Inline)+ '**'
+
+StrongUl   <-    '__' !Whitespace ( !'__' Inline )+ '__'
+
+Strike <- '~~' !Whitespace (!'~~' Inline)+ '~~'
+
+Image <- '!' ( ExplicitLink / ReferenceLink )
+
+Link <-  ExplicitLink / ReferenceLink / AutoLink
+
+ReferenceLink <- ReferenceLinkDouble / ReferenceLinkSingle
+
+ReferenceLinkDouble <-  Label Spnl !'[]' Label
+
+ReferenceLinkSingle <-  Label (Spnl '[]')?
+
+ExplicitLink <-  Label '(' Sp Source Spnl Title Sp ')'
+
+Source  <- ( '<' SourceContents '>' / SourceContents )
+
+SourceContents <- ( ( !'(' !')' !'>' Nonspacechar )+ / '(' SourceContents ')')*
+
+Title <- ( TitleSingle / TitleDouble / '""')
+
+TitleSingle <- "'" ( !( '\'' Sp ( ')' / Newline ) ) . )* "'"
+
+TitleDouble <- '"' ( !( '"' Sp ( ')' / Newline ) ) . )* '"'
+
+AutoLink <- AutoLinkUrl / AutoLinkEmail
+
+AutoLinkUrl <-   '<' [A-Za-z]+ "://" ( !Newline !'>' . )+ '>'
+
+AutoLinkEmail <- '<' ( "mailto:" )? [-A-Za-z0-9+_./!%~$]+ '@' ( !Newline !'>' . )+ '>'
+
+Reference <- NonindentSpace !"[]" Label ':' Spnl RefSrc RefTitle BlankLine+
+
+Label <- '[' !'^' StartList (!']' Inline)* ']'
+
+RefSrc <- Nonspacechar+
+
+RefTitle <-  ( RefTitleSingle / RefTitleDouble / RefTitleParens / EmptyTitle )
+
+EmptyTitle <- &.
+
+RefTitleSingle <- Spnl "'" ( !("'" Sp Newline / Newline ) . )* "'"
+
+RefTitleDouble <- Spnl '"' (!('"' Sp Newline / Newline) . )* '"'
+
+RefTitleParens <- Spnl '(' ( !(')' Sp Newline / Newline) . )* ')'
+
+References <- StartList (Reference  / SkipBlock)*
+
+Ticks1 <- "`" !'`'
+Ticks2 <- "``" !'`'
+Ticks3 <- "```" !'`'
+Ticks4 <- "````" !'`'
+Ticks5 <- "`````" !'`'
+
+Code <- (Ticks1 Sp (( !'`' Nonspacechar )+ / !Ticks1 '`'+ / !( Sp Ticks1 ) ( Spacechar / Newline !BlankLine ) )+ Sp Ticks1
+        / Ticks2 Sp ( ( !'`' Nonspacechar )+ / !Ticks2 '`'+ / !( Sp Ticks2 ) ( Spacechar / Newline !BlankLine ) )+ Sp Ticks2
+        / Ticks3 Sp ( ( !'`' Nonspacechar )+ / !Ticks3 '`'+ / !( Sp Ticks3 ) ( Spacechar / Newline !BlankLine ) )+ Sp Ticks3
+        / Ticks4 Sp ( ( !'`' Nonspacechar )+ / !Ticks4 '`'+ / !( Sp Ticks4 ) ( Spacechar / Newline !BlankLine ) )+ Sp Ticks4
+        / Ticks5 Sp ( ( !'`' Nonspacechar )+ / !Ticks5 '`'+ / !( Sp Ticks5 ) ( Spacechar / Newline !BlankLine ) )+ Sp Ticks5
+        )
+
+RawHtml <-   (HtmlComment / HtmlBlockScript / HtmlTag)
+
+BlankLine <-     Sp Newline
+
+Quoted <-        '"' (!'"' .)* '"' / '\'' (!'\'' .)* '\''
+HtmlAttribute <- (AlphanumericAscii / '-')+ Spnl ('=' Spnl (Quoted / (!'>' Nonspacechar)+))? Spnl
+HtmlComment <-   "<!--" (!"-->" .)* "-->"
+HtmlTag <-       '<' Spnl '/'? AlphanumericAscii+ Spnl HtmlAttribute* '/'? Spnl '>'
+Eof <-           !.
+Spacechar <-     ' ' / u0009 # tab char code
+Nonspacechar <-  !Spacechar !Newline .
+Newline <-  u000A  / (u000D u000A?)
+Sp <-            Spacechar*
+Spnl <-          Sp (Newline Sp)?
+SpecialChar <-   '~' / '*' / '_' / '`' / '&' / '[' / ']' / '(' / ')' / '<' / '!' / '#' / '\\' / '\'' / '"' 
+NormalChar <-    !( SpecialChar / Spacechar / Newline ) .
+Alphanumeric <- [0-9A-Za-z] / u0200 / u0201 / u0202 / u0203 / u0204 / u0205 / u0206 / u0207 / u0210 / u0211 / u0212 / u0213 / u0214 / u0215 / u0216 / u0217 / u0220 / u0221 / u0222 / u0223 / u0224 / u0225 / u0226 / u0227 / u0230 / u0231 / u0232 / u0233 / u0234 / u0235 / u0236 / u0237 / u0240 / u0241 / u0242 / u0243 / u0244 / u0245 / u0246 / u0247 / u0250 / u0251 / u0252 / u0253 / u0254 / u0255 / u0256 / u0257 / u0260 / u0261 / u0262 / u0263 / u0264 / u0265 / u0266 / u0267 / u0270 / u0271 / u0272 / u0273 / u0274 / u0275 / u0276 / u0277 / u0300 / u0301 / u0302 / u0303 / u0304 / u0305 / u0306 / u0307 / u0310 / u0311 / u0312 / u0313 / u0314 / u0315 / u0316 / u0317 / u0320 / u0321 / u0322 / u0323 / u0324 / u0325 / u0326 / u0327 / u0330 / u0331 / u0332 / u0333 / u0334 / u0335 / u0336 / u0337 / u0340 / u0341 / u0342 / u0343 / u0344 / u0345 / u0346 / u0347 / u0350 / u0351 / u0352 / u0353 / u0354 / u0355 / u0356 / u0357 / u0360 / u0361 / u0362 / u0363 / u0364 / u0365 / u0366 / u0367 / u0370 / u0371 / u0372 / u0373 / u0374 / u0375 / u0376 / u0377
+AlphanumericAscii <- [A-Za-z0-9]
+Digit <- [0-9]
+BOM <-  u0357 u0273 u0277
+HexEntity <-     '&' '#' [Xx] [0-9a-fA-F]+ ';'
+DecEntity <-     '&' '#' [0-9]+ ';'
+CharEntity <-    '&' [A-Za-z0-9]+ ';'
+
+# TODO make sure that these '&.' fillers for "" actually work as intended
+# TODO there's another def where I did this, need to see across the whole grammar
+NonindentSpace <-    "   " / "  " / " " / &.
+Indent <-            u0009 / "    "
+IndentedLine <-      Indent Line
+OptionallyIndentedLine <- Indent? Line
+# StartList starts a list data structure that can be added to with cons:
+StartList <- &.
+ 
+Line <-  RawLine
+
+RawLine <- ( (!'\r' !'\n' .)* Newline / .+ Eof )
+
+SkipBlock <- HtmlBlock
+          / ( !'#' !SetextBottom1 !SetextBottom2 !BlankLine RawLine )+ BlankLine*
+          / BlankLine+
+          / RawLine
+
+# Syntax extensions
+
+Smart <- ( Ellipsis / Dash / SingleQuoted / DoubleQuoted / Apostrophe )
+
+Apostrophe <- '\''
+
+Ellipsis <- ("..." / ". . .")
+ 
+Dash <- EmDash / EnDash
+
+EnDash <- '-' &Digit
+
+EmDash <- '---' / '--'
+
+SingleQuoteStart <- '\'' !(Spacechar / Newline)
+
+SingleQuoteEnd <- '\'' !Alphanumeric
+
+SingleQuoted <- (SingleQuoteStart StartList
+               (!SingleQuoteEnd Inline)+
+               SingleQuoteEnd)
+
+DoubleQuoteStart <- '"'
+
+DoubleQuoteEnd <- '"'
+
+DoubleQuoted <-  (DoubleQuoteStart
+                StartList
+                ( !DoubleQuoteEnd Inline)+
+                DoubleQuoteEnd)
+
+NoteReference <- RawNoteReference
+
+RawNoteReference <- '[^' (!Newline !']' .)+ ']'
+
+Note <-         (NonindentSpace RawNoteReference ':' Sp
+                StartList
+                RawNoteBlock
+                ( &Indent RawNoteBlock)*)
+
+InlineNote <-  (  "^["
+                StartList
+                (!']' Inline)+
+                ']')
+
+Notes <-         StartList
+                (Note / SkipBlock )*
+                
+
+RawNoteBlock <-  StartList (!BlankLine OptionallyIndentedLine)+ BlankLine*
+
