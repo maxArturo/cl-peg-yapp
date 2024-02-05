@@ -79,8 +79,8 @@
 
 (interpol:enable-interpol-syntax)
 
-(parse #'definition "EscapedChar <-   '\\' !Newline [-\\\\`|*_{}[\]()#+.!><]")
-(parse #'definition "")
+; (parse #'definition "EscapedChar <-   '\\' !Newline [-\\\\`|*_{}[\]()#+.!><]")
+; (parse #'definition "")
 #+5am
 (5am:test scan-def-test
   (test-full-match #'definition "AposChunk <- '\\\''")

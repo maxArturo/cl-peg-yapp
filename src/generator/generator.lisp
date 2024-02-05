@@ -331,6 +331,11 @@ Value   ← [0-9]+ / '(' Expr ')'"))
   (5am:is
    (funcall 
      (eval 
+       (gen-range-expr (parse #'range-expr "[`\\\-A-Z0-9]")))
+     (coerce "6IX" 'list) 0))
+  (5am:is
+   (funcall 
+     (eval 
        (gen-range-expr (parse #'range-expr "[`A-Z0-9]")))
      (coerce "6IX" 'list) 0))
   (let ((da-funk
@@ -343,8 +348,8 @@ Value   ← [0-9]+ / '(' Expr ')'"))
   (if (match-children node)
       (with-child 
         (trivia:ematch kind
-          (:escaped-square-bracket
-            `(char-literal #\]))))
+          (:escaped-string-char
+            (gen-escaped-string-char child))))
       (with-node-literal
         `(char-literal ,(char node-literal 0)))))
 #+5am
@@ -359,6 +364,9 @@ Value   ← [0-9]+ / '(' Expr ')'"))
      (eval 
        (gen-range-char-option (parse #'range-char-option "`00A")))
      (coerce "`[A-Z]" 'list) 0)))
+
+(defnode escaped-string-char
+  (with-node-literal `(char-literal ,(char node-literal 1))))
 
 (defnode alphanum-class
   `(or-expr (char-range #\A #\Z)
@@ -433,7 +441,7 @@ Value   ← [0-9]+ / '(' Expr ')'"))
     (if (match-children node)
         (with-child 
           (trivia:ematch kind
-            (:escaped-hyphen
+            (:escaped-string-char
               (if (eql (match-start child) node-start)
                   `(char-range #\- 
                                ,(char node-literal 3))   

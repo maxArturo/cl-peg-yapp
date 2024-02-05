@@ -35,30 +35,17 @@
           (5am:is (eq NIL
            (test-input #'lower-case "Jigaro"))))
 
-(defexpr escaped-single-quote
-        (escaped-char (char-literal #\')))
+;; escaped chars and expressions
+(defexpr escaped-char-literal #'any-char)
+(defexpr escaped-string-char
+        (escaped-char #'escaped-char-literal))
+
 #+5am
-(5am:test string-literal-test
+(5am:test escaped-string-char-test
   (5am:is
-   (test-input #'escaped-single-quote "\\\'")))
-
-(defexpr escaped-double-quote
-        (escaped-char (char-literal #\")))
-
-(defexpr escaped-hyphen
-        (escaped-char (char-literal #\-)))
-
-(defexpr escaped-square-bracket
-        (escaped-char (char-literal #\])))
-
-
-;; TODO left off here
-(compose
-(test-input 
- (or-expr
-  #'escaped-single-quote
-  #'any-char)
- "\\"))
+   (test-input #'escaped-char-literal "\\\\"))
+  (5am:is
+   (test-input #'escaped-char-literal "\\\'")))
 
 ; represents a single-quoted string, e.g. 'hello'
 (defexpr string-literal
@@ -70,7 +57,7 @@
                  (negative-lookahead 
                    (char-literal #\"))
                  (or-expr
-                   #'escaped-double-quote
+                   #'escaped-string-char
                    #'any-char)))
              (char-literal #\"))
            (compose
@@ -80,7 +67,7 @@
                  (negative-lookahead 
                    (char-literal #\'))
                  (or-expr
-                   #'escaped-single-quote
+                   #'escaped-string-char
                    #'any-char)))
              (char-literal #\'))))
 #+5am
@@ -110,12 +97,12 @@
          (compose
           (negative-lookahead (char-literal #\-))
           (or-expr 
-            #'escaped-hyphen
+            #'escaped-string-char
             #'any-char)
           (char-literal #\-)
           (negative-lookahead (char-literal #\-))
           (or-expr 
-            #'escaped-hyphen
+            #'escaped-string-char
             #'any-char)))
 #+5am
 (5am:test char-range-literal-test
@@ -181,7 +168,7 @@
 
 (defexpr range-char-option
          (or-expr 
-           #'escaped-square-bracket
+           #'escaped-string-char
            #'any-char))
 #+5am
 (5am:test range-char-option-test
