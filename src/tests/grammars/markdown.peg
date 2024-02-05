@@ -323,7 +323,7 @@ StrChunk <- (NormalChar / '_'+ &Alphanumeric)+ /
 
 AposChunk <- '\\\'' &Alphanumeric
 
-EscapedChar <-   '\\\\' !Newline [-\\\\`|*_{}[\]()#+.!><]
+EscapedChar <-   '\\\\' !Newline [-\\`|*_{}[\]()#+.!><]
 
 # Entity <-    ( HexEntity / DecEntity / CharEntity )
 #             
