@@ -1,3 +1,8 @@
+# Rough mirror of the definition at 
+# https://github.com/jgm/peg-markdown/blob/master/markdown_parser.leg
+# Only modified for compatibility: removes local var assignment and incompatible 
+# parsing chars `<`, `>`, etc. introduced with leg version.
+
 Doc <-       BOM? Block*
 
 Block <-     BlankLine* (BlockQuote

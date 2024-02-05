@@ -1,4 +1,5 @@
 (in-package #:cl-peg-yapp/peg-scanner)
+(interpol:enable-interpol-syntax)
 
 #+5am
 (5am:in-suite scanner-suite)
@@ -11,6 +12,13 @@
          (uiop:read-file-string file)))
 
 #+nil
+(funcall
+ (generate 
+      (parse-grammar #p"src/tests/grammars/markdown.peg"))
+ #?|\
+    ## Hey \n
+This is me, [my link](example.com)|)
+
 (generate (parse-grammar #p"src/tests/grammars/markdown.peg"))
 
 #+5am
@@ -26,7 +34,10 @@
   (test-full-match
     (generate 
       (parse-grammar #p"src/tests/grammars/markdown.peg"))
-    "**hello**" :parser-expr t))
+    #?|\
+    ## Hey \n
+    This is me, [my link](http://example.com)
+    | :parser-expr t))
 
 #+nil
 (funcall 
